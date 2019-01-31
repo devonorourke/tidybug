@@ -9,9 +9,9 @@ library(stringi)
 ## set working directory to your path of choice...
 #notrun: setwd("~/Documents/dissertation/methods_paper/datasets/")
 ## download data
-download.file("https://github.com/devonorourke/pzero/raw/master/data/vsearch.arthtable.qza", "vsearch.table.qza")
-download.file("https://github.com/devonorourke/pzero/raw/master/data/deblur.arthtable.qza", "deblur.table.qza")
-download.file("https://github.com/devonorourke/pzero/raw/master/data/dada2.arthtable.qza", "dada2.table.qza")
+download.file("https://github.com/devonorourke/tidybug/raw/master/data/qiime/tables/vsearch.arthtable.qza", "vsearch.table.qza")
+download.file("https://github.com/devonorourke/tidybug/raw/master/data/qiime/tables/deblur.arthtable.qza", "deblur.table.qza")
+download.file("https://github.com/devonorourke/tidybug/raw/master/data/qiime/tables/dada2.arthtable.qza", "dada2.table.qza")
 
 ## convert .qza to matrix, then convert wide-format matrix to long-format data.frame object
 ## first for dada2
@@ -53,7 +53,7 @@ rm(dada2.tmp, deblur.tmp, vsearch.tmp)
 colnames(df) <- c("HashID", "SeqID", "Reads", "Method")
 
 ## import metadata, combine with df object:
-download.file("https://github.com/devonorourke/pzero/raw/master/data/metadata.tsv", "metadata.tsv")
+download.file("https://github.com/devonorourke/tidybug/raw/master/data/metadata/metadata.tsv", "metadata.tsv")
 meta <- read.table("metadata.tsv", sep="", header=TRUE)
 df <- merge(df, meta, by = "SeqID")   ## note we drop a few observations from sequences present in samples known to have been contaminated
 rm(meta)
@@ -66,7 +66,7 @@ rm(meta)
 ## 4) those header names were uplaoded to github repo and are imported here:
 
 ## import hashID lists and resolve sha1 vs MD5-hash'd strings in the headers
-download.file("https://github.com/devonorourke/pzero/raw/master/data/allheaders.txt.gz", "allheaders.txt.gz")
+download.file("https://github.com/devonorourke/tidybug/raw/master/data/metadata/allheaders.txt.gz", "allheaders.txt.gz")
 hashtable <- read.table(gzfile("allheaders.txt.gz"), header = FALSE)
 colnames(hashtable) <- c("md5", "HashID")
 ## merge with dataframe 'df' object
@@ -79,15 +79,15 @@ df$HashID <- NULL
 colnames(df)[7] <- "HashID"
 
 ## transform the df$Reads to log2 scale:
-df$log2reads <- round(log2(df$Reads)) 
+df$log2reads <- round(log2(df$Reads))
 
 ## create list of distinct HashIDs among all Filtering methods
 set.seed(100)
 uniqHashs <- df %>% distinct(HashID)
 uniqHashs$Alias <- stri_rand_strings(nrow(uniqHashs), 6)
 ## add back into dataset
-df <- merge(df, uniqHashs)  
+df <- merge(df, uniqHashs)
 
 ## write file to disk
 write.csv(df, "all.filtmethods.df.csv", quote = FALSE, row.names = FALSE)
-## this file is gzipped and uploaded to Github repo 'github.com/devonorourke/pzero'
+## this file is gzipped and uploaded to Github repo 'github.com/devonorourke/tidybug/data/text_tables'
