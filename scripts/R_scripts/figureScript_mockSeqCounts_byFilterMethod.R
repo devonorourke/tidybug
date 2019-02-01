@@ -3,8 +3,8 @@
 library(tidyverse)
 library(scales)
 library(viridis)
-library(ggridges)
 library(ggrepel)
+library(reshape2)
 
 # create theme function for all plots
 # theme function for custom plot style:
@@ -18,7 +18,6 @@ theme_devon <- function () {
     )
 }
 
-head(df)
 ## import data and select mock samples:
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
 mock <- df %>% filter(SampleType == "mock")
@@ -64,7 +63,7 @@ mock.all$Labeler <- factor(mock.all$Labeler,levels = c("unfiltered", "filtered")
 
 ## save as fig2A; export at EXACTLY 1000x504... any resizing screws with label positions
 ggplot(data = mock.all, aes(x = Reads, y = Method, color=Type, label = Alias)) +
-  geom_jitter(alpha=0.7, height = 0.1) +
+  geom_jitter(alpha=0.6, height = 0.2) +
   scale_color_manual(values = pal3, name = "") +
   scale_x_continuous(labels = comma, trans = "log2") +
   facet_grid(Labeler ~ Library) +
@@ -72,6 +71,3 @@ ggplot(data = mock.all, aes(x = Reads, y = Method, color=Type, label = Alias)) +
   labs(title="", x="number of sequences", y="") +
   theme_devon() +
   theme(legend.position="top")
-head(mock.all)
-## tiny summary of mock data, per Library, per filtering/not
-mock_Sumry <- mock.all %>% group_by(Library, Method, Labeler, Type) %>% summarise(CountTypes=n())
