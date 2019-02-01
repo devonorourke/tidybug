@@ -215,6 +215,102 @@ The `*.droplist` file is then used to exlcude the ASVs we suspect are derived fr
 The `*.arthtable.qza` files produced represent our host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). Each `.qza` file was uploaded to the Github repo.
 
 # QIIME artifact filtering and HashID amendments
-In the midst of the sequence variant assignment process it was discovered that the QIIME implementation of the hashing algorithms used to assign each unique sequence some string of alphanumeric characters differed between Vsearch and Dada2/Deblur. We reran the vsearch algorithm natively and specified the `--relable_md5` hashID parameter to generate comparable sequence variants across platforms. See [this QIIME forum post](https://forum.qiime2.org/t/where-does-hashid-get-assigned-in-dada2-deblur-and-vsearch/7738) highlighting the observation.
+In the midst of the sequence variant assignment process it was discovered that the QIIME implementation of the hashing algorithms used to assign each unique sequence some string of alphanumeric characters differed between Vsearch and Dada2/Deblur. We reran the vsearch algorithm natively and specified the `--relable_md5` hashID parameter to generate comparable sequence variants across platforms. See [this QIIME forum post](https://forum.qiime2.org/t/where-does-hashid-get-assigned-in-dada2-deblur-and-vsearch/7738) highlighting the issue and resolution.
 
-We manually recreated the data tables by deconstructing the QIIME2 artifact file in R, amended the labels, and recreated the QIIME file. See the `qiime2R_datawrangling.R` script within the data/r_scripts section of the repo. Completion of that R script serves as the input for figures in the manuscript -  a single `.csv` file that is essentially a 'wide to long' transformation of the filtering program matricies, with each row representing one element of an OTU table (a per sample, per sequence variant count) which includes the associated metadata.
+We manually recreated the data tables by deconstructing the QIIME2 artifact file in R, amended the labels, and recreated the QIIME file specifically for vsearch (so that identical sequence variants across dada2, deblur, and vsearch pipelines have matching hashID names). See the `qiime2R_datawrangling.R` script within the data/r_scripts section of the repo. Completion of that R script serves as the input for figures in the manuscript -  a single .csv file (`all.filtmethods.df.csv.gz`) that is essentially a 'wide to long' transformation of the filtering program matricies, with each row representing one element of an OTU table (a per sample, per sequence variant count) which includes the associated metadata.
+
+# Mock Quality Control
+For each sequencing run a single mock community sample was included in addition to the bat guano samples. The mock samples consisted of equimolar concentrations of pooled plasmids trasformed from 24 sequence variants isolated from voucher arthropod specimen spanning 10 arthropod orders; full details can be found [here](https://doi.org/10.1111/1755-0998.12951).
+
+## Generating query sequences
+A reference QIIME artifact consisting of the known (expected) mock sequences was generated from the fasta file of known community members and sequences (`CFMR_insect_mock4.fasta`) and uploaded into QIIME format:
+```
+qiime tools import \
+  --input-path CFMR_insect_mock4.fasta \
+  --output-path mock.ExpectedSeqs.qza \
+  --type 'FeatureData[Sequence]'
+```  
+> See a similar `CMFR_insect_mock4_wtax.fasta` file for expected taxonomic information.
+
+## Generating subject (reference) sequences
+Sequence variants identified as mock samples within the `all.filtmethods.df.csv.gz` file were identified and saved as a `mocklist.txt` file. This was done in R with just a few lines:
+```
+download.file("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz", "all.filtmethods.df.csv.gz")
+df <- read.csv(gzfile("all.filtmethods.df.csv.gz"),header = TRUE)
+mock <- df %>% filter(SampleType == "mock")
+mockHashID <- mock %>% distinct(HashID)
+write.table(mockHashID, "mocklist.txt", quote=FALSE, row.names = FALSE, col.names = FALSE)
+```
+The individual `*all.raw.seqs.qza` artifacts generated from the various pipelines (see: seqfilter.deblur_example.sh, seqfilter.vsearch_example.sh, and seqfilter.dada2_example.sh) were merged into a single representative sequence set. We have to recreate a vsearch fasta file with compatible md5 headers and recreate appropriate .qza file (because, as before, vsearch in QIIME defaults to sha-style hash IDs):
+```
+qiime tools export --input-path vsearch.all.raw.seqs.qza --output-path vsearchallrawseqs
+vsearch -derep_fulllength ./vsearchallrawseqs/dna-sequences.fasta -relabel_md5 -xsize -output vsearch.all.raw.seqs_md5.fasta
+qiime tools import --input-path vsearch.all.raw.seqs_md5.fasta --output-path vsearch.all.raw.seqs_md5.qza --type 'FeatureData[Sequence]'
+```
+
+Next, combine the three Filtering method artifacts into a single dataset:
+```
+qiime feature-table merge-seqs \
+--i-data vsearch.all.raw.seqs_md5.qza \
+--i-data deblur.all.raw.seqs.qza \
+--i-data dada2.all.raw.seqs.qza \
+--o-merged-data allMethods.raw.seqs.qza
+```
+
+Now export that file to search that fasta for all fasta sequences matching the `mocklist.txt` data:
+```
+qiime tools export --input-path allMethods.raw.seqs.qza --output-path allMethods_rawSeqs
+grep -f mocklist.txt -A 1 allMethods_rawSeqs/dna-sequences.fasta | sed '/^--$/d' > mockRepSeqs.fasta
+```
+
+and take that fasta file and reimport as our file to search with (representing our query sequences):
+```
+qiime tools import --input-path mockRepSeqs.fasta --output-path mock.RepSeqs.qza --type 'FeatureData[Sequence]'
+```
+
+## Identifying expected sequences
+
+We used the QIIME quality-control plugin to identify exact and partial matches via vsearch's global alignment algorithms:
+```
+## use 100% identity for the exact matches; default coverage length is 97%
+qiime quality-control exclude-seqs --p-method vsearch \
+--i-query-sequences mock.RepSeqs.qza \
+--i-reference-sequences mock.ExpectedSeqs.qza \
+--p-perc-identity 1.0 \
+--o-sequence-hits mock.exactHits.qza \
+--o-sequence-misses mock.exactMisses.qza
+
+## use 97% identity for partial matches
+qiime quality-control exclude-seqs --p-method vsearch \
+--i-query-sequences mock.exactMisses.qza \
+--i-reference-sequences mock.ExpectedSeqs.qza \
+--p-perc-identity 0.97 \
+--o-sequence-hits mock.partialHits.qza \
+--o-sequence-misses mock.partialMisses.qza
+```
+
+Export .qza outputs as fasta files:
+```
+qiime tools export --input-path mock.exactHits.qza --output-path mockMatching
+cd ./mockMatching
+mv dna-sequences.fasta mock.exactHits.fasta
+cd ..
+qiime tools export --input-path mock.partialHits.qza --output-path mockMatching
+cd ./mockMatching
+mv dna-sequences.fasta mock.partialHits.fasta
+cd ..
+qiime tools export --input-path mock.partialMisses.qza --output-path mockMatching
+cd ./mockMatching
+mv dna-sequences.fasta mock.partialMisses.fasta
+```
+> fasta files available on Github repo!
+
+Lastly, create 3 lists of sequences:
+```
+grep "^>" mock.exactHits.fasta | sed 's/>//' > mock.exactHits.txt
+grep "^>" mock.partialHits.fasta | sed 's/>//' > mock.partialHits.txt
+grep "^>" mock.partialMisses.fasta | sed 's/>//' > mock.partialMisses.txt
+```
+> text files available on Github repo!
+
+The resulting text files were used as input to generate the figures associated with mock samples.
