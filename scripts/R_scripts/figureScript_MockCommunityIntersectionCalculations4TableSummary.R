@@ -3,6 +3,16 @@
 library(tidyverse)
 library(reshape2)
 
+theme_devon <- function () { 
+  theme_bw(base_size=12, base_family="Avenir") %+replace% 
+    theme(
+      panel.background  = element_blank(),
+      plot.background = element_rect(fill="transparent", colour=NA), 
+      legend.background = element_rect(fill="transparent", colour=NA),
+      legend.key = element_rect(fill="transparent", colour=NA)
+    )
+}
+
 ## import data and select mock samples:
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
 mock <- df %>% filter(SampleType == "mock")
@@ -209,3 +219,51 @@ int.miss.filt.db <- intersect(miss.filt.db.libA$HashID, intersect(miss.filt.db.l
 int.miss.filt.vs <- intersect(miss.filt.vs.libA$HashID, intersect(miss.filt.vs.libB$HashID, intersect(miss.filt.vs.libC$HashID, miss.filt.vs.libD$HashID)))
 
 
+
+
+### 
+## which "miss" sequences are present in either Dada2/Deblur data?
+missers <- mock %>% filter(Method!="vsearch" & Type=="miss") %>% distinct(HashID)
+write.table(missers, file="~/Repos/tidybug/data/mock_community/miss.nonVsearch.HashIDs.txt", row.names = FALSE, quote=FALSE, col.names = FALSE)
+## this list was then used to query the `mock.partialMisses.fasta` file and then that output was used as input to NCBI blast
+## 1) grep -f miss.nonVsearch.HashIDs.txt mock.partialMisses.fasta -A 1 | sed '/^--$/d' > miss.nonVsearch.fasta
+## 2) use `miss.nonVsearch.fasta` for NCBI blast 
+
+## how many times are these "miss" ASVs observed across the entire dataset?
+nonV.miss <- df %>% filter(HashID %in% missers$HashID)
+missSums <- nonV.miss %>% group_by(Method, HashID, Library) %>% summarise(Counts=n())
+missSums$Labeler <- paste(missSums$Method, missSums$Library, sep=".")
+MissTable <- dcast(missSums, HashID ~ Labeler, value.var='Counts')
+
+## what's the mean and median times an ASV is observed in the data (per Method per Library)?
+dfSums <- df %>% 
+  group_by(Method, HashID, Library) %>% 
+  summarise(Counts=n()) %>% 
+  group_by(Method, Library) %>%
+  summarise(MeanCounts=mean(Counts), MedianCounts=median(Counts)) %>%
+  mutate(Labeler=paste(Method, Library, sep="."))
+## somewhere between 2-8! nothing like the 100 we're seeing frequently here
+
+## easier to visualize?
+ggplot(missSums, aes(x=Library, y=Counts, color=Library)) + 
+  geom_jitter(width=0.3, alpha=0.7) +
+  facet_grid(~ Method) +
+  scale_color_manual(values=c('#1f78b4', '#b2df8a', '#a6cee3', '#33a02c')) +
+  labs(title="", x="", y="Frequency ASV detected") +
+  #geom_hline(mapping = TRUE, data = dfSums, yintercept = dfSums$MeanCounts, linetype="dotted", color="blue") +
+  #geom_hline(mapping = TRUE, data = dfSums, yintercept = dfSums$MedianCounts, linetype="dashed", color="red") +
+  theme_devon() + theme(legend.position="none")
+
+
+## adding in blast pid and pcov info
+## added by adding the `miss.nonVsearch.fasta` file to NCBI blast to collect percent identity (pid) and query coverage (qcov)..
+## ..values were selected from top hit 
+blastdat <- read_delim("~/Repos/tidybug/data/mock_community/blastdata.tsv", delim = "\t")
+missSums <- merge(missSums, blastdat)
+
+ggplot(missSums, aes(x=qcov, y=pid, color=Counts)) + 
+  geom_point() +
+  facet_grid(Library ~ Method) +
+  scale_color_viridis_c(option="plasma", end = 0.95) +
+  labs(x="query coverage", y="percent identity", title="", color="frequency\ndetected") +
+  theme_devon()
