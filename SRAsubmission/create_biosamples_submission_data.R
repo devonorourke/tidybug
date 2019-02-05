@@ -1,72 +1,123 @@
 library(tidyverse)
+library(reshape2)
 
-meta <- read_delim('https://github.com/devonorourke/pzero/raw/master/data/clean_metadata.txt', delim = "\t")
-p41 <- read.csv("~/Desktop/p41.manifest.file")
-p42 <- read.csv("~/Desktop/p42.manifest.file")
-p71 <- read.csv("~/Desktop/p71.manifest.file")
-p72 <- read.csv("~/Desktop/p72.manifest.file")
+## read in full metadata and select and rename columns needed
+meta <- read_delim('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/clean_metadata.txt', delim = "\t")
+meta <- meta[,c(5,6,11,14:15)]
+colnames(meta) <- c("Sample Name", "Library", "Sample type", "sitecode", "date")
+
+## read in manifest files of used data and identify samples in meta that generated sequence data
+p41 <- read_csv('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/p41.manifest.file')
+p42 <- read_csv('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/p42.manifest.file')
+p71 <- read_csv('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/p71.manifest.file')
+p72 <- read_csv('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/p72.manifest.file')
 pall <- rbind(p41, p42, p71, p72)
+colnames(pall) <- c("Sample Name", "filepath", "direction")
+samplemeta <- intersect(meta$`Sample Name`, pall$`Sample Name`)
+meta <- meta %>% filter(`Sample Name`%in% samplemeta)
+rm(p41, p42, p71, p72, samplemeta)
+pall <- separate(pall, col = filepath, into = c("tmp1", "tmp2", "tmp3", "tmp4", "tmp5", "tmp6", "tmp7", "tmp8", "tmp9", "filepath"), sep = "\\/")
+pall <- pall[,c(1,11:12)]
 
-pSamples <- pall$sample.id
-samplemeta <- intersect(meta$SeqID, pall$sample.id)
-meta <- meta %>% filter(SeqID %in% samplemeta)
-#rm(p41, p42, p71, p72, pSamples, samplemeta)
-########
-
-meta$Site <- gsub("control", "ncontrol", meta$Site)
-meta$Date <- gsub("control", "ncontrol", meta$Date)
+## reshape the `pall` file from long to wide (each SampleName has two columns, one for each path to files)
+pall_wide <- dcast(pall, `Sample Name` ~ direction, value.var = "filepath")
+rm(pall)
+colnames(pall_wide) <- c("Sample Name", "Filename", "filename2")
 
 ## overwrite new $Date and $WOY columns with lubridate package to ensure we're selecting a consistent WOY
-meta$NewDate <- as.character(lubridate::mdy(meta$Date))
+meta$`collection date` <- as.character(lubridate::mdy(meta$date))
 ## any samples we'd be discarding or are NA are converted to generic date
-meta$NewDate[which(meta$SampleType == "ncontrol")] = "2000-01-01"
-meta$NewDate[which(meta$Date == "unknown")] = "2000-01-01"
-meta$NewDate[which(meta$SampleID == "35A01")] = "2000-01-01"
-meta$NewDate[which(meta$SampleType == "mock")] = "2000-01-01"
+meta$`collection date`[which(meta$`Sample type` == "ncontrol")] = "not applicable"
+meta$`collection date`[which(meta$`Sample type` == "mock")] = "not applicable"
+meta$`collection date`[which(meta$date == "unknown")] = "not recorded"
+meta$`collection date`[which(meta$`Sample Name` == "negoro35A01")] = "not applicable"
 
-meta$Library <- meta$SeqBatch
-meta$Library <- gsub("4.1", "libA", meta$Library)
-meta$Library <- gsub("4.2", "libB", meta$Library)
-meta$Library <- gsub("7.1", "libC", meta$Library)
-meta$Library <- gsub("7.2", "libD", meta$Library)
+## fill in remaining attributes
+meta$`Sample title` <- ""
+meta$`BioProject Accession` <- "PRJNA518082"
+meta$Organism <- "not collected"
+meta$`isolation source` <- "feces metagenome"
+meta$`latitude and longitude` <- "not collected"
+meta$host <- ""
+meta$Isolate <- meta$`Sample Name`
+meta$`geographic location` <- ""
 
+## replace existing sitecode with full description to match their geographic location term
+meta$`geographic location`[which(meta$sitecode=="HOP")] = "USA: Hopkinton NH"
+meta$`geographic location`[which(meta$sitecode=="ACA")] = "USA: Acadia National Park ME"
+meta$`geographic location`[which(meta$sitecode=="YRK")] = "USA: Yorktown Naval Weapons Station VA"
+meta$`geographic location`[which(meta$sitecode=="ELY")] = "USA: Ely Mine VT"
+meta$`geographic location`[which(meta$sitecode=="BRN")] = "USA: Brown Lane Hollis NH"
+meta$`geographic location`[which(meta$sitecode=="MAP")] = "USA: Maple Hill Hollis NH"
+meta$`geographic location`[which(meta$sitecode=="ROL")] = "USA: Rollinsford NH"
+meta$`geographic location`[which(meta$sitecode=="PEN")] = "USA: Penacook NH"
+meta$`geographic location`[which(meta$sitecode=="EPS")] = "USA: Epsom NH"
+meta$`geographic location`[which(meta$sitecode=="CNB")] = "USA: Canterbury NH"
+meta$`geographic location`[which(meta$sitecode=="GIL")] = "USA: Gilsum NH"
+meta$`geographic location`[which(meta$sitecode=="HOL")] = "USA: Holderness NH"
+meta$`geographic location`[which(meta$sitecode=="CHI")] = "USA: Chichester NH"
+meta$`geographic location`[which(meta$sitecode=="MAS")] = "USA: Massabesic NH"
+meta$`geographic location`[which(meta$sitecode=="FOX")] = "USA: Fox State Forest NH"
+meta$`geographic location`[which(meta$sitecode=="FAR")] = "USA: Fairfield ME"
+meta$`geographic location`[which(meta$sitecode=="MTV")] = "USA: Mount Vernon NH"
+meta$`geographic location`[which(meta$sitecode=="ALS")] = "USA: Alstead NH"
+meta$`geographic location`[which(meta$`Sample type` == "mock")] = "not applicable"
+meta$`geographic location`[which(meta$`Sample type` == "ncontrol")] = "not applicable"
+meta$`geographic location`[which(meta$`Sample Name` == "negoro35A01")] = "not applicable"
 
-newmeta <- meta[,c(5,11,14,23,24)]
-newmeta$newSite <- newmeta$Site
-newmeta$newSite <- gsub("HOP", "Hopkinton NH", newmeta$newSite)
-newmeta$newSite <- gsub("ACA", "Acadia National Park ME", newmeta$newSite)
-newmeta$newSite <- gsub("YRK", "Yorktown Naval Weapons Station VA", newmeta$newSite)
-newmeta$newSite <- gsub("ELY", "Ely Mine VT", newmeta$newSite)
-newmeta$newSite <- gsub("BRN", "Brown Lane Hollis NH", newmeta$newSite)
-newmeta$newSite <- gsub("MAP", "Maple Hill Hollis NH", newmeta$newSite)
-newmeta$newSite <- gsub("ROL", "Rollinsford NH", newmeta$newSite)
-newmeta$newSite <- gsub("PEN", "Penacook NH", newmeta$newSite)
-newmeta$newSite <- gsub("EPS", "Epsom NH", newmeta$newSite)
-newmeta$newSite <- gsub("CNB", "Canterbury NH", newmeta$newSite)
-newmeta$newSite <- gsub("GIL", "Gilsum NH", newmeta$newSite)
-newmeta$newSite <- gsub("HOL", "Holderness NH", newmeta$newSite)
-newmeta$newSite <- gsub("CHI", "Chichester NH", newmeta$newSite)
-newmeta$newSite <- gsub("MAS", "Massabesic NH", newmeta$newSite)
-newmeta$newSite <- gsub("FOX", "Fox State Forest NH", newmeta$newSite)
-newmeta$newSite <- gsub("FAR", "Fairfield ME", newmeta$newSite)
-newmeta$newSite <- gsub("MTV", "Mount Vernon NH", newmeta$newSite)
-newmeta$newSite <- gsub("ALS", "Alstead NH", newmeta$newSite)
-newmeta$newSite[which(newmeta$SampleType == "mock")] = "mock"
+## substitute Library codes to match figures in paper:
+meta$Library[which(meta$Library == "4.1")] = "libA"
+meta$Library[which(meta$Library == "4.2")] = "libB"
+meta$Library[which(meta$Library == "7.1")] = "libC"
+meta$Library[which(meta$Library == "7.2")] = "libD"
 
-newmeta$Site <- NULL
+## reorder to match SRA template column order
+meta_attributes <- meta[,c(1,7:9,12,10,6,14,11,3,2,13)]
 
-newmeta$bioproject_accession <- "SUB5109424"
-newmeta$organism <- "not collected"
-newmeta$env_broad_scale <- "not collected"
-newmeta$env_local_scale <- "not applicable"
-newmeta$env_medium <- "not applicable"
-newmeta$host <- "not collected"
-newmeta$lat_lon <- "not applicable"
-newmeta$AltDate <- newmeta$NewDate
+## write per-Library records to disk:
+attributes_libA <- meta_attributes %>% filter(Library=="libA")
+attributes_libA$Library <- NULL
+attributes_libB <- meta_attributes %>% filter(Library=="libB")
+attributes_libB$Library <- NULL
+attributes_libC <- meta_attributes %>% filter(Library=="libC")
+attributes_libC$Library <- NULL
+attributes_libD <- meta_attributes %>% filter(Library=="libD")
+attributes_libD$Library <- NULL
 
-newmeta$AltDate[which(newmeta$SampleType == "ncontrol")] = "not applicable"
-newmeta$AltDate[which(newmeta$NewDate == "unknown")] = "not collected"
-newmeta$AltDate[which(newmeta$SampleType == "mock")] = "not applicable"
-newmeta$AltDate[which(newmeta$newSite == "Canterbury NH" & newmeta$Library == "libD" & newmeta$NewDate == "2000-01-01")] = "not collected"
+write.table(attributes_libA, file="~/Repos/tidybug/SRAsubmission/libA_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+write.table(attributes_libB, file="~/Repos/tidybug/SRAsubmission/libB_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+write.table(attributes_libC, file="~/Repos/tidybug/SRAsubmission/libC_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+write.table(attributes_libD, file="~/Repos/tidybug/SRAsubmission/libD_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
 
-write.csv(newmeta, file="~/Desktop/newmeta.csv", quote=FALSE, row.names = FALSE)
+## Create additional fields for second SRA 'metadata' submission:
+meta$Title <- "COI amplicons from bat guano"
+meta$`Library strategy` <- 'AMPLICON'
+meta$`Library source` <- 'METAGENOMIC'
+meta$`Library selection` <- 'PCR'
+meta$`Library layout` <- 'PAIRED'
+meta$Platform <- 'ILLUMINA'
+meta$`Instrument model` <- 'Illumina MiSeq'
+meta$`Design description` <- 'COI amplicons generated from ANML primer pair'
+meta$Filetype <- 'fastq'
+meta <- merge(meta, pall_wide)
+
+## select needed columns:
+meta_library<- meta[,c(8,1,1,15:25, 2)]
+colnames(meta_library) <- c("bioproject_accession", "sample_name", "library_ID", "title", "library_strategy", 
+                            "library_source", "library_selection", "library_layout", "platform", "instrument_model", 
+                            "design_description", "filetype", "filename", "filename2", "Library")
+
+library_libA <- meta_library %>% filter(Library == "libA")
+## (realized I was doing the submission the wrong way and redid lib's B-D)
+library_libB <- meta_library %>% filter(Library == "libB")
+library_libB$biosample_accession <- "SUB5131058"
+library_libB$sample_name <- NULL
+library_libC <- meta_library %>% filter(Library == "libC")
+library_libC$biosample_accession <- "SUB5131060"
+library_libD <- meta_library %>% filter(Library == "libD")
+library_libD$biosample_accession <- "SUB5131070"
+
+write.table(library_libA, file="~/Repos/tidybug/SRAsubmission/libA_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+write.table(library_libB, file="~/Repos/tidybug/SRAsubmission/libB_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+write.table(library_libC, file="~/Repos/tidybug/SRAsubmission/libC_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+write.table(library_libD, file="~/Repos/tidybug/SRAsubmission/libD_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
