@@ -25,14 +25,14 @@ qiime feature-table merge \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p42/qiime/reads/dada2/p42.dada2.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/dada2/p71.dada2.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/dada2/p72.dada2.table.qza \
-  --o-merged-table dada2.all.raw.table.qza
+  --o-merged-table dada2.all.basic.table.qza
 # sequences
 qiime feature-table merge-seqs \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p41/qiime/reads/dada2/p41.dada2.repSeqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p42/qiime/reads/dada2/p42.dada2.repSeqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/dada2/p71.dada2.repSeqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/dada2/p72.dada2.repSeqs.qza \
-  --o-merged-data dada2.all.raw.seqs.qza
+  --o-merged-data dada2.all.basic.seqs.qza
 
 
 ## repeat merging for deblur tables and seqs
@@ -42,14 +42,14 @@ qiime feature-table merge \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p42/qiime/reads/deblur/p42.dblr.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/deblur/p71.dblr.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/deblur/p72.dblr.table.qza \
-  --o-merged-table deblur.all.raw.table.qza
+  --o-merged-table deblur.all.basic.table.qza
 # sequences
 qiime feature-table merge-seqs \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p41/qiime/reads/deblur/p41.dblr.repseqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p42/qiime/reads/deblur/p42.dblr.repseqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/deblur/p71.dblr.repseqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/deblur/p72.dblr.repseqs.qza \
-  --o-merged-data deblur.all.raw.seqs.qza
+  --o-merged-data deblur.all.basic.seqs.qza
 
 ## repeat merging tables for vsearch tables and seqs
 # tables
@@ -58,14 +58,14 @@ qiime feature-table merge \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p42/qiime/reads/vsearch/p42.vsrch.postChimera.p97clust.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/vsearch/p71.vsrch.postChimera.p97clust.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/vsearch/p72.vsrch.postChimera.p97clust.table.qza \
-  --o-merged-table vsearch.all.raw.table.qza
+  --o-merged-table vsearch.all.basic.table.qza
 # sequences
 qiime feature-table merge-seqs \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p41/qiime/reads/vsearch/p41.vsrch.postChimera.p97clust.seqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p42/qiime/reads/vsearch/p42.vsrch.postChimera.p97clust.seqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/vsearch/p71.vsrch.postChimera.p97clust.seqs.qza \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/vsearch/p72.vsrch.postChimera.p97clust.seqs.qza \
-  --o-merged-data vsearch.all.raw.seqs.qza
+  --o-merged-data vsearch.all.basic.seqs.qza
 
 ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ ##### ~ #####
 ## part 2: remove bat (host) sequences from table/seq files
@@ -78,7 +78,7 @@ REF=/mnt/lustre/macmaneslab/devon/guano/BOLDdb/NHbat_seqs.qza
 
 for METHOD in $(ls -1 | cut -f 1 -d '.' | sort -u); do
   qiime quality-control exclude-seqs \
-    --i-query-sequences "$METHOD".all.raw.seqs.qza \
+    --i-query-sequences "$METHOD".all.basic.seqs.qza \
     --i-reference-sequences "$REF" \
     --p-perc-identity 0.95 \
     --o-sequence-hits "$METHOD".hostseqs.qza \
@@ -90,7 +90,7 @@ for METHOD in $(ls -1 | cut -f 1 -d '.' | sort -u); do
   grep "^>" "$METHOD"_hostseqs/dna-sequences.fasta | sed 's/>//' | sed '1 i\#OTU ID' > "$METHOD".droplist;
 
   qiime feature-table filter-features \
-  --i-table "$METHOD".all.raw.table.qza \
+  --i-table "$METHOD".all.basic.table.qza \
   --m-metadata-file "$METHOD".droplist \
   --o-filtered-table "$METHOD".arthtable.qza \
   --p-exclude-ids
