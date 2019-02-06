@@ -1,3 +1,8 @@
+## I initially used this script to generate an SRA submission
+## My first submission batch was for LibA data, and started without generating any BioSample Accessions
+## I then submitted BioSamples for Lib's B, C, and D, so I had to change how this script produced the necessary data
+## Nevertheless, this script will generate the metadata and sample data needed for a successful NCBI submission
+
 library(tidyverse)
 library(reshape2)
 
@@ -88,6 +93,9 @@ write.table(attributes_libA, file="~/Repos/tidybug/SRAsubmission/libA_attributes
 write.table(attributes_libB, file="~/Repos/tidybug/SRAsubmission/libB_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
 write.table(attributes_libC, file="~/Repos/tidybug/SRAsubmission/libC_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
 write.table(attributes_libD, file="~/Repos/tidybug/SRAsubmission/libD_attributes.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+## cleanup
+rm(list=ls(pattern="^attributes_*"))
+rm(meta_attributes)
 
 ## Create additional fields for second SRA 'metadata' submission:
 meta$Title <- "COI amplicons from bat guano"
@@ -108,16 +116,34 @@ colnames(meta_library) <- c("bioproject_accession", "sample_name", "library_ID",
                             "design_description", "filetype", "filename", "filename2", "Library")
 
 library_libA <- meta_library %>% filter(Library == "libA")
-## (realized I was doing the submission the wrong way and redid lib's B-D)
-library_libB <- meta_library %>% filter(Library == "libB")
-library_libB$biosample_accession <- "SUB5131058"
-library_libB$sample_name <- NULL
-library_libC <- meta_library %>% filter(Library == "libC")
-library_libC$biosample_accession <- "SUB5131060"
-library_libD <- meta_library %>% filter(Library == "libD")
-library_libD$biosample_accession <- "SUB5131070"
-
 write.table(library_libA, file="~/Repos/tidybug/SRAsubmission/libA_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+
+## (realized I was doing the submission the wrong way and redid lib's B-D)
+## this was where I needed to switch gears, and bring in the BioSample Accession ID
+library_libB <- meta_library %>% filter(Library == "libB")
+bioSam_libB <- read_delim('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/libB_BioSampleObjects.txt', delim = "\t")
+bioSam_libB <- bioSam_libB[,c(1:2)]
+library_libB <- merge(library_libB, bioSam_libB, by.x="sample_name", by.y="Sample Name")
+colnames(library_libB)[16] <- "biosample_accession"
+library_libB$Library <- NULL
+library_libB$sample_name <- NULL
 write.table(library_libB, file="~/Repos/tidybug/SRAsubmission/libB_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+
+
+library_libC <- meta_library %>% filter(Library == "libC")
+bioSam_libC <- read_delim('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/libC_BioSampleObjects.txt', delim = "\t")
+bioSam_libC <- bioSam_libC[,c(1:2)]
+library_libC <- merge(library_libC, bioSam_libC, by.x="sample_name", by.y="Sample Name")
+colnames(library_libC)[16] <- "biosample_accession"
+library_libC$Library <- NULL
+library_libC$sample_name <- NULL
 write.table(library_libC, file="~/Repos/tidybug/SRAsubmission/libC_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
+
+library_libD <- meta_library %>% filter(Library == "libD")
+bioSam_libD <- read_delim('https://github.com/devonorourke/tidybug/raw/master/SRAsubmission/libD_BioSampleObjects.txt', delim = "\t")
+bioSam_libD <- bioSam_libD[,c(1:2)]
+library_libD <- merge(library_libD, bioSam_libD, by.x="sample_name", by.y="Sample Name")
+colnames(library_libD)[16] <- "biosample_accession"
+library_libD$Library <- NULL
+library_libD$sample_name <- NULL
 write.table(library_libD, file="~/Repos/tidybug/SRAsubmission/libD_librarymeta.tsv", quote=FALSE, row.names = FALSE, sep = "\t")
