@@ -9,6 +9,7 @@ Within an active Conda environment with QIIME2 installed, data was imported by c
 See `seqfilter.import_example` for template shell script.
 
 > Note in the code below that `$LIB` signifies the path to a directory containing a single sequencing run's worth of fastq files
+
 ```
 ## each $LIB represents a directory containing
 qiime tools import \
@@ -179,62 +180,51 @@ grep "^>" vsearch.all.md5.seqs.fasta | sed 's/>//' >> vsearch.all.headers.txt
 rm -r vtmpseqs
 ```
 
-We then run the small R script which converts the .qza artifact with the sha1 hashIDs into the md5 version, using the "$LIB".headers.txt information provided above.
+We then run the following R script which converts the .qza artifact with the sha1 hashIDs into the md5 version, using the "$LIB".headers.txt information provided above:
+```
+# required: library(devtools)
+# runonce: install_github("jbisanz/qiime2R", force=TRUE)
+library(tidyverse)
+library(reshape2)
+library(qiime2R)
+library(phyloseq)
 
+featuretable <- read_qza("vsearch.all.raw.table.qza")   ## convert .qza to matrix, then convert wide-format matrix to long-format data.frame object
+mat.tmp <- featuretable$data
+df.tmp <- as.data.frame(mat.tmp)
+df.tmp$OTUid <- rownames(df.tmp)
+rownames(df.tmp) <- NULL
+vsearch.tmp <- melt(df.tmp, id = "OTUid") %>% filter(value != 0) %>% mutate(Method = "vsearch")
+colnames(vsearch.tmp) <- c("sha1", "SeqID", "Reads", "Method")
 
-This
-
-That new fasta file header retained both the original sha1 and the new md5 hash. We then created a list of the sha1 and md5 hashIDs for all sequences in the fasta file.
+hashtable <- read.table(gzfile("vsearch.all.headers.txt"), header = TRUE)   ## import hashID lists and resolve sha1 vs MD5-hash'd strings in the headers
+colnames(hashtable) <- c("md5", "sha1")
+df <- merge(vsearch.tmp, hashtable, all.x = TRUE)       ## merge with dataframe 'df' object
+df <- df[c(2,3,5)]
+df$md5 <- as.character(df$md5)
+df.mat <- dcast(df, md5 ~ SeqID, value.var = "Reads", fill = 0)   ## reformat to matrix
+colnames(df.mat)[1] <- "#OTU ID"
+write.table(df.mat, "vsearch.all.raw.md5.table.tsv", quote = FALSE, row.names = FALSE)    ## write file to disk
 ```
 
-## create new OTUtable from md5-labeled fasta
-#vsearch --cluster_size "$LIB".vsearch.md5.seqs.fasta --id 1.0 --relabel OTU --biomout "$LIB".vsearch.md5.biom
-vsearch --cluster_size "$LIB".vsearch.md5.seqs.fasta --id 1.0 --biomout "$LIB".vsearch.md5.biom
-
+We then convert that text table into a QIIME .qza file along with the reformatted .fasta file.
+```
 ## convert fasta back into proper .qza object
 qiime tools import \
   --type 'FeatureData[Sequence]' \
-  --input-path "$LIB".vsearch.md5.seqs.fasta \
-  --output-path "$LIB".vsrch.postChimera.p97clust.seqs.qza
+  --input-path vsearch.all.md5.seqs.fasta \
+  --output-path vsearch.all.raw.seqs.qza
 
-## convert .biom back into proper .qza object
+## convert .tsv table into .biom, then .biom back into proper .qza object
+biom convert -i vsearch.all.raw.md5.table.tsv -o vsearch.all.raw.md5.table.biom --table-type="OTU table" --to-hdf5
+
 qiime tools import \
-  --input-path "$LIB".vsearch.md5.biom \
+  --input-path vsearch.all.raw.md5.table.biom \
   --type 'FeatureTable[Frequency]' \
-  --input-format BIOMV100Format \
-  --output-path "$LIB".vsrch.postChimera.p97clust.table.qza
-
-mv *.qza ..
-
-
-
-## Filtering datasets
-The "standard" and "extra" tables are created from the `*seqs.qza` and `*table.qza` objects (from dada2, deblur, and vsearch-filtered inputs). The "standard" filter requires that we retain only samples with at least 5000 _filtered_ sequence reads, and keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then merge all data across all four libraries before applying the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample.
-
-> We show here one example of how this filtering works, for the vsearch-filtered data (the same principle applies to the dada2 and deblur-filtered tables):
-
+  --input-format BIOMV210Format \
+  --output-path vsearch.all.raw.table.qza
 ```
-## perform minimum read filtering per sample
-qiime feature-table filter-samples \
---i-table \
---p-min-frequency 5000 \
---o-filtered-table "$LIB".tmp.vsrch.samp-filt.table.qza
-
-## combine the tables together
-
-## combine sequences together
-
-## remove singleton sequence variants from the combined (dataset-wide) table:
-qiime feature-table filter-features \
---i-table "$LIB".tmp.vsrch.samp-filt.table.qza \
---p-min-samples 2 \
---o-filtered-table "$LIB".vsrch.standard.table.qza
-
-rm "$LIB".tmp.vsrch.samp-filt.table.qza
-```
-
-The "extra" filtering strategy follows a similar logic as the "standard" filter, but adds one additional requirement: we remove a specified number of reads from every sequence variant observation per sample. How this specified read number is derived is explained below.
-
+> Note that the `vsearch.all.raw.*.qza` files were overwriting the original files used as input into the whole relabeleing process
 
 
 ## Filtering potential host sequences
@@ -289,18 +279,39 @@ The `*.droplist` file is then used to exlcude the ASVs we suspect are derived fr
   --p-exclude-ids
 ```
 
-The `*.arthtable.qza` files produced represent our host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). Each `.qza` file was uploaded to the Github repo.
+The `*.arthtable.qza` files produced represent our "basic" host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). These artifacts serve as the input for potentially additional sample and sequence variant-based filtering described next.
 
-# QIIME artifact filtering and HashID amendments
-In the midst of the sequence variant assignment process it was discovered that the QIIME implementation of the hashing algorithms used to assign each unique sequence some string of alphanumeric characters differed between Vsearch and Dada2/Deblur. We reran the vsearch algorithm natively and specified the `--relable_md5` hashID parameter to generate comparable sequence variants across platforms. See [this QIIME forum post](https://forum.qiime2.org/t/where-does-hashid-get-assigned-in-dada2-deblur-and-vsearch/7738) highlighting the issue and resolution.
+## Filtering datasets
+The "standard" and "extra" tables are created from the `*arthseqs.qza` and `*arthtable.qza` objects (from dada2, deblur, and vsearch-filtered inputs).
 
-We manually recreated the data tables by deconstructing the QIIME2 artifact file in R, amended the labels, and recreated the QIIME file specifically for vsearch (so that identical sequence variants across dada2, deblur, and vsearch pipelines have matching hashID names). See the `qiime2R_datawrangling.R` script within the data/r_scripts section of the repo. Completion of that R script serves as the input for figures in the manuscript -  a single .csv file (`all.filtmethods.df.csv.gz`) that is essentially a 'wide to long' transformation of the filtering program matricies, with each row representing one element of an OTU table (a per sample, per sequence variant count) which includes the associated metadata.
+### Standard filtering approach
+The "standard" filter will apply two criteria for inclusion: (1) samples must have at least 5000 sequence reads (from the `*arthseqs.qza` artifact), and (2) keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then apply the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample.
 
-# Mock Quality Control
-For each sequencing run a single mock community sample was included in addition to the bat guano samples. The mock samples consisted of equimolar concentrations of pooled plasmids trasformed from 24 sequence variants isolated from voucher arthropod specimen spanning 10 arthropod orders; full details can be found [here](https://doi.org/10.1111/1755-0998.12951).
+> We show here how the "standard" filtering works using the dada2-filtered data as an example (the same principle applies to the dada2 and deblur-filtered tables):
 
-## Generating query sequences
+```
+## perform minimum read filtering per sample
+qiime feature-table filter-samples \
+--i-table dada2.arthtable.qza \
+--p-min-frequency 5000 \
+--o-filtered-table dada2.tmp.standard.table.qza
+
+## remove singleton sequence variants from the combined (dataset-wide) table:
+qiime feature-table filter-features \
+--i-table dada2.tmp.standard.table.qza \
+--p-min-samples 2 \
+--o-filtered-table dada2.standard.table.qza
+
+rm dada2.tmp.standard.table.qza
+```
+
+The "extra" filtering strategy follows a similar logic as the "standard" filter, but adds one additional requirement: we remove a specified number of reads from every sequence variant observation per sample. How this specified read number is derived is explained below.
+
+### Extra filtering approach
+The "extra" filter uses the same filtering criteria as the "standard" filter, but further requires that a fixed-count subtraction is applied to all reads per sequence variant per sample. This value is determined by first identifying which ASVs in a given mock sample are unexpected: those samples that have less than 97% identity to our known mock sequences. Once we have a list of the unexpected, or "miss" sequences, we identify the sequence variant among those "miss" variatns with the highest read count. That maximum value serves as the integer with which all sequence variants are reduced by.
+
 A reference QIIME artifact consisting of the known (expected) mock sequences was generated from the fasta file of known community members and sequences (`CFMR_insect_mock4.fasta`) and uploaded into QIIME format:
+
 ```
 qiime tools import \
   --input-path CFMR_insect_mock4.fasta \
@@ -309,85 +320,87 @@ qiime tools import \
 ```  
 > See a similar `CMFR_insect_mock4_wtax.fasta` file for expected taxonomic information.
 
-## Generating subject (reference) sequences
-Sequence variants identified as mock samples within the `all.filtmethods.df.csv.gz` file were identified and saved as a `mocklist.txt` file. This was done in R with just a few lines:
+To create a feature table consisting of just the four mock samples, we first create a small metadata file listing the 4 mock samples of interest:
 ```
-download.file("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz", "all.filtmethods.df.csv.gz")
-df <- read.csv(gzfile("all.filtmethods.df.csv.gz"),header = TRUE)
-mock <- df %>% filter(SampleType == "mock")
-mockHashID <- mock %>% distinct(HashID)
-write.table(mockHashID, "mocklist.txt", quote=FALSE, row.names = FALSE, col.names = FALSE)
-```
-The individual `*all.raw.seqs.qza` artifacts generated from the various pipelines (see: seqfilter.deblur_example.sh, seqfilter.vsearch_example.sh, and seqfilter.dada2_example.sh) were merged into a single representative sequence set. We have to recreate a vsearch fasta file with compatible md5 headers and recreate appropriate .qza file (because, as before, vsearch in QIIME defaults to sha-style hash IDs):
-```
-qiime tools export --input-path vsearch.all.raw.seqs.qza --output-path vsearchallrawseqs
-vsearch -derep_fulllength ./vsearchallrawseqs/dna-sequences.fasta -relabel_md5 -xsize -output vsearch.all.raw.seqs_md5.fasta
-qiime tools import --input-path vsearch.all.raw.seqs_md5.fasta --output-path vsearch.all.raw.seqs_md5.qza --type 'FeatureData[Sequence]'
+echo SampleID > mocklist.txt
+echo mockIM4p4L1 >> mocklist.txt
+echo mockIM4p4L2 >> mocklist.txt
+echo mockIM4p7L1 >> mocklist.txt
+echo mockIM4p7L2 >> mocklist.txt
 ```
 
-Next, combine the three Filtering method artifacts into a single dataset:
+Because all filtered samples contain the same mock sample names, we can apply that file to filter each feature table to include just the mock samples (making a mock-only feature table). We apply this to each of the 3 `*arthtable.qza` files (example shown here for dada2):
+> Note the `$MOCKLIST` variable shown below describes the full path to the `mocklist.txt` file
+
 ```
-qiime feature-table merge-seqs \
---i-data vsearch.all.raw.seqs_md5.qza \
---i-data deblur.all.raw.seqs.qza \
---i-data dada2.all.raw.seqs.qza \
---o-merged-data allMethods.raw.seqs.qza
+qiime feature-table filter-samples \
+  --i-table dada2.arthtable.qza \
+  --m-metadata-file "$MOCKLIST" \
+  --o-filtered-table dada2.mock.table.qza
 ```
 
-Now export that file to search that fasta for all fasta sequences matching the `mocklist.txt` data:
+We then use that table as the input to filter out just the sequences we need - those sequences identified in the mock samples:
 ```
-qiime tools export --input-path allMethods.raw.seqs.qza --output-path allMethods_rawSeqs
-grep -f mocklist.txt -A 1 allMethods_rawSeqs/dna-sequences.fasta | sed '/^--$/d' > mockRepSeqs.fasta
-```
-
-and take that fasta file and reimport as our file to search with (representing our query sequences):
-```
-qiime tools import --input-path mockRepSeqs.fasta --output-path mock.RepSeqs.qza --type 'FeatureData[Sequence]'
+qiime feature-table filter-seqs \
+  --i-data dada2.arthseqs.qza \
+  --i-table dada2.mock.table.qza \
+  --o-filtered-data dada2.mock.seqs.qza
 ```
 
-## Identifying expected sequences
+This mock sample file is then used to identify the "exact", "partial", and "miss" sequence variants among each of the four mock samples. We used the QIIME quality-control plugin to identify exact and partial matches via vsearch's global alignment algorithms (example shown here for dada2):
+> The `$MOCKREF` variable shown below refers to the full path to the `mock.ExpectedSeqs.qza` file created previously.
 
-We used the QIIME quality-control plugin to identify exact and partial matches via vsearch's global alignment algorithms:
 ```
 ## use 100% identity for the exact matches; default coverage length is 97%
 qiime quality-control exclude-seqs --p-method vsearch \
---i-query-sequences mock.RepSeqs.qza \
---i-reference-sequences mock.ExpectedSeqs.qza \
+--i-query-sequences dada2.mock.seqs.qza \
+--i-reference-sequences $MOCKREF \
 --p-perc-identity 1.0 \
---o-sequence-hits mock.exactHits.qza \
---o-sequence-misses mock.exactMisses.qza
+--o-sequence-hits dada2.mock.exactHits.qza \
+--o-sequence-misses dada2.mock.exactMisses.qza
 
 ## use 97% identity for partial matches
 qiime quality-control exclude-seqs --p-method vsearch \
---i-query-sequences mock.exactMisses.qza \
---i-reference-sequences mock.ExpectedSeqs.qza \
+--i-query-sequences dada2.mock.exactMisses.qza \
+--i-reference-sequences $MOCKREF \
 --p-perc-identity 0.97 \
---o-sequence-hits mock.partialHits.qza \
---o-sequence-misses mock.partialMisses.qza
+--o-sequence-hits dada2.mock.partialHits.qza \
+--o-sequence-misses dada2.mock.partialMisses.qza
+
+rm dada2.mock.exactMisses.qza
 ```
 
-Export .qza outputs as fasta files:
+We then export the `*mock.partialMisses.qza` file and create a list of those sequence HashIDs remaining among the "miss" variants. This list is then used to parse the original `*arthtable.qza` file, after which we export into a .qzv format to identify the value to be used for further data filtering (example below specific to dada2 dataset; process was repeated for deblur and vsearch):
 ```
-qiime tools export --input-path mock.exactHits.qza --output-path mockMatching
-cd ./mockMatching
-mv dna-sequences.fasta mock.exactHits.fasta
-cd ..
-qiime tools export --input-path mock.partialHits.qza --output-path mockMatching
-cd ./mockMatching
-mv dna-sequences.fasta mock.partialHits.fasta
-cd ..
-qiime tools export --input-path mock.partialMisses.qza --output-path mockMatching
-cd ./mockMatching
-mv dna-sequences.fasta mock.partialMisses.fasta
+qiime tools export --input-path dada2.mock.partialMisses.qza --output-path tmp
+echo '#OTU ID' > dada2.misslist.txt
+grep "^>" ./tmp/dna-sequences.fasta | sed 's/>//' >> dada2.misslist.txt
+rm -r tmp
+qiime feature-table filter-features \
+  --i-table dada2.arthtable.qza \
+  --m-metadata-file dada2.misslist.txt \
+  --o-filtered-table dada2.miss.table.tmp.qza
+qiime feature-table filter-samples \
+    --i-table dada2.miss.table.tmp.qza \
+    --m-metadata-file "$MOCKLIST" \
+    --o-filtered-table dada2.miss.table.qza  
+rm dada2.miss.table.tmp.qza    
+qiime tools export --input-path dada2.miss.table.qza --output-path tmp
+biom convert -i ./tmp/feature-table.biom -o dada2.miss.table.tsv --to-tsv
+rm -r tmp
 ```
-> fasta files available on Github repo!
 
-Lastly, create 3 lists of sequences:
+We can then parse that `.tsv` file to determine what the maximum value is per Library. Each Library is then filtered according to that value. For example, to determine the dada2-filtered tables for LibraryD, we could run this one-liner:
 ```
-grep "^>" mock.exactHits.fasta | sed 's/>//' > mock.exactHits.txt
-grep "^>" mock.partialHits.fasta | sed 's/>//' > mock.partialHits.txt
-grep "^>" mock.partialMisses.fasta | sed 's/>//' > mock.partialMisses.txt
+cat dada2.miss.table.tsv | awk -F '\t' 'NR>1 {print $1,$5}' | sort -nr -k 2,2
 ```
-> text files available on Github repo!
+and determine that the maximum value of a "miss" sequence variant is 23.
 
-The resulting text files were used as input to generate the figures associated with mock samples.
+A summary of these values are provided in the table below:
+
+| Library | DADA2 | Deblur | Vsearch |
+| --- | --- |
+| LibA | 6 | 2 | 11 |
+| LibB | 13 | 5 | 15 |
+| LibC | 8 | 3 | 11 |
+| LibD | 23 | 8 | 26 |
