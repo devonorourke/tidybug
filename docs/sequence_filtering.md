@@ -71,6 +71,11 @@ qiime deblur denoise-other \
 --o-stats "$LIB".dblr.stats.qza
 ```
 
+> Two default parameters not specified here of interest:
+- `--p-min-size` affects what sequences are considered during the execution of Deblur; the default is **2**, meaning no sample with an ASV of read depth 1 is considered in this analysis
+- `--p-min-reads` filters low abundant sequences after Deblur filtering is executed; the default is **10**, which impacts both the unfiltered ASVs above as well as any remaining _filtered_ reads.
+Thus, the resulting matrix of counts in the feature table has already had 10 reads subtracted from the initial input of read counts.
+
 ### Vsearch
 The parameters chosen in this implementation follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). Within the QIIME installation, Vsearch filtering first required the read pairs to be joined first; we then applied a basic quality filter to the sequences:
 ```
@@ -134,13 +139,14 @@ qiime vsearch cluster-features-de-novo \
 --o-clustered-table "$LIB".vsrch.postChimera.p97clust.table.qza \
 --o-clustered-sequences "$LIB".vsrch.postChimera.p97clust.seqs.qza
 
-qiime tools export --input-path "$LIB".vsrch.nonchimera.seqs.qza --output-path "$LIB".p100clust.seqs
-qiime tools export --input-path "$LIB".vsrch.postChimera.p97clust.seqs.qza --output-path "$LIB".p97clust.seqs
+qiime tools export --input-path "$LIB".vsrch.postChimera.p97clust.seqs.qza --output-path "$LIB".p97clust
 qiime tools export --input-path "$LIB".chimerafilt-stats.qzv --output-path "$LIB".chimerafilt-stats.txt
  ```
 
+However, this creates a problem when comparing across filtering pipelines: vsearch by default in QIIME's implementation creates a sha1-hashed label, whereas dada2 and deblur use an md5 hashing algorithm to label sequences. As a result, you can't compare identical sequences. To fix this, we reformatted the resulting `"$LIB".vsrch.postChimera.p97clust*.qza` artifacts by (1) appending the sequences with the md5 hash using a native Vsearch function; generating a list of the equivalent md5 and sha1 hashIDs for each sequence; using these hashID pairs to relabel the original .qza feature table. Rather than doing this four times (one for each library), we're going to first combine the four libraries into a single dataset and execute the script just once.
+
 ## Combining datasets
-Following these three filtering pipelines, the per-`$LIB` tables and representative sequences were joined into individual `.qza` artifacts. See the `seqfilter.combineNfilter.sh` shell script for full details. As an example, this is how the Dada2-filtered sequencing batches of tables and sequences were combined (the same would apply for deblur and vsearch, respectively):
+Following these three basic filtering pipelines, the per-`$LIB` tables and representative sequences were joined into individual `.qza` artifacts. See the `seqfilter.combineNfilter.sh` shell script for full details. As an example, this is how the Dada2-filtered sequencing batches of tables and sequences were combined (the same would apply for deblur and vsearch):
 
 ```
 ## merge the features for all dada2-produced tables and sequences
@@ -151,6 +157,7 @@ qiime feature-table merge \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p71/qiime/reads/dada2/p71.dada2.table.qza \
   --i-tables /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/dada2/p72.dada2.table.qza \
   --o-merged-table dada2.all.raw.table.qza
+
 # sequences
 qiime feature-table merge-seqs \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p41/qiime/reads/dada2/p41.dada2.repSeqs.qza \
@@ -159,6 +166,76 @@ qiime feature-table merge-seqs \
   --i-data /mnt/lustre/macmaneslab/devon/guano/Data/individLibs/p72/qiime/reads/dada2/p72.dada2.repSeqs.qza \
   --o-merged-data dada2.all.raw.seqs.qza
 ```
+
+## Amending the Vsearch data
+The combined `vsearch.all.raw.*.qza` files needed to be relabled from their sha1 format to the md5 hash format, as described above. We did this by creating
+```
+## reformat the Vsearch fasta file with md5 hash labels, while retaining the original sha1 hash ID
+qiime tools export --input-path vsearch.all.raw.seqs.qza --output-path vtmpseqs
+vsearch -derep_fulllength ./vtmpseqs/dna-sequences.fasta -relabel_md5 -relabel_keep -xsize -output vsearch.all.md5.seqs.fasta -fasta_width 0
+## make a list of these headers
+echo "md5 sha1" > vsearch.all.headers.txt
+grep "^>" vsearch.all.md5.seqs.fasta | sed 's/>//' >> vsearch.all.headers.txt
+rm -r vtmpseqs
+```
+
+We then run the small R script which converts the .qza artifact with the sha1 hashIDs into the md5 version, using the "$LIB".headers.txt information provided above.
+
+
+This
+
+That new fasta file header retained both the original sha1 and the new md5 hash. We then created a list of the sha1 and md5 hashIDs for all sequences in the fasta file.
+```
+
+## create new OTUtable from md5-labeled fasta
+#vsearch --cluster_size "$LIB".vsearch.md5.seqs.fasta --id 1.0 --relabel OTU --biomout "$LIB".vsearch.md5.biom
+vsearch --cluster_size "$LIB".vsearch.md5.seqs.fasta --id 1.0 --biomout "$LIB".vsearch.md5.biom
+
+## convert fasta back into proper .qza object
+qiime tools import \
+  --type 'FeatureData[Sequence]' \
+  --input-path "$LIB".vsearch.md5.seqs.fasta \
+  --output-path "$LIB".vsrch.postChimera.p97clust.seqs.qza
+
+## convert .biom back into proper .qza object
+qiime tools import \
+  --input-path "$LIB".vsearch.md5.biom \
+  --type 'FeatureTable[Frequency]' \
+  --input-format BIOMV100Format \
+  --output-path "$LIB".vsrch.postChimera.p97clust.table.qza
+
+mv *.qza ..
+
+
+
+## Filtering datasets
+The "standard" and "extra" tables are created from the `*seqs.qza` and `*table.qza` objects (from dada2, deblur, and vsearch-filtered inputs). The "standard" filter requires that we retain only samples with at least 5000 _filtered_ sequence reads, and keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then merge all data across all four libraries before applying the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample.
+
+> We show here one example of how this filtering works, for the vsearch-filtered data (the same principle applies to the dada2 and deblur-filtered tables):
+
+```
+## perform minimum read filtering per sample
+qiime feature-table filter-samples \
+--i-table \
+--p-min-frequency 5000 \
+--o-filtered-table "$LIB".tmp.vsrch.samp-filt.table.qza
+
+## combine the tables together
+
+## combine sequences together
+
+## remove singleton sequence variants from the combined (dataset-wide) table:
+qiime feature-table filter-features \
+--i-table "$LIB".tmp.vsrch.samp-filt.table.qza \
+--p-min-samples 2 \
+--o-filtered-table "$LIB".vsrch.standard.table.qza
+
+rm "$LIB".tmp.vsrch.samp-filt.table.qza
+```
+
+The "extra" filtering strategy follows a similar logic as the "standard" filter, but adds one additional requirement: we remove a specified number of reads from every sequence variant observation per sample. How this specified read number is derived is explained below.
+
+
 
 ## Filtering potential host sequences
 It's possible that following quality filtering the remaining data includes host (bat) COI sequences. Failure to remove these sequences can result in misidentifying the bat COI sequence as some arthropod sequence (because the database that sequences are assigned taxonomy consists exclusively of arthropod information). Because we captured our data within New Hampshire there are a finite list of possible bat hosts. Representative sequences for each bat species were obtained from two Genbank projects:
