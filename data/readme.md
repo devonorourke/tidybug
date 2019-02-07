@@ -1,1 +1,1 @@
-Raw data available at https://www.ncbi.nlm.nih.gov/bioproject/PRJNA518082
+Raw data available at https://www.ncbi.nlm.nih.gov/sra/PRJNA518082
