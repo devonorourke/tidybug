@@ -279,33 +279,13 @@ The `*.droplist` file is then used to exlcude the ASVs we suspect are derived fr
   --p-exclude-ids
 ```
 
-The `*.arthtable.qza` files produced represent our "basic" host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). These artifacts serve as the input for potentially additional sample and sequence variant-based filtering described next.
+The `*.arthtable.qza` files produced represent our "basic" host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). These artifacts serve as the input for potentially additional sample and sequence variant-based filtering described next. Files were uploaded to the Github repo (/tidybug/data/qiime/tables).
 
 ## Filtering datasets
-The "standard" and "extra" tables are created from the `*arthseqs.qza` and `*arthtable.qza` objects (from dada2, deblur, and vsearch-filtered inputs).
+The "standard" and "extra" tables are created from the `*arthseqs.qza` and `*arthtable.qza` objects (from dada2, deblur, and vsearch-filtered inputs). We opted to use a combination of QIIME-supported functions as well as a custom R script `sequence_filtering.R` to generate the "standard" and "extra" datasets because of the need for generating the figures used in this manuscript and to allow for additional flexibility in statistical tests not supported with QIIME2 version 2018.11 (note that additional packages like the Adonis plugin for PERMANOVA testing of group differences were added to QIIME2 v.2019.1, for example). We provide context for how the "standard" and "extra" filters are designed below, and have commented within the R script for additional clarification.
 
 ### Standard filtering approach
-The "standard" filter will apply two criteria for inclusion: (1) samples must have at least 5000 sequence reads (from the `*arthseqs.qza` artifact), and (2) keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then apply the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample.
-
-> We show here how the "standard" filtering works using the dada2-filtered data as an example (the same principle applies to the dada2 and deblur-filtered tables):
-
-```
-## perform minimum read filtering per sample
-qiime feature-table filter-samples \
---i-table dada2.arthtable.qza \
---p-min-frequency 5000 \
---o-filtered-table dada2.tmp.standard.table.qza
-
-## remove singleton sequence variants from the combined (dataset-wide) table:
-qiime feature-table filter-features \
---i-table dada2.tmp.standard.table.qza \
---p-min-samples 2 \
---o-filtered-table dada2.standard.table.qza
-
-rm dada2.tmp.standard.table.qza
-```
-
-The "extra" filtering strategy follows a similar logic as the "standard" filter, but adds one additional requirement: we remove a specified number of reads from every sequence variant observation per sample. How this specified read number is derived is explained below.
+The "standard" filter will apply two criteria for inclusion: (1) samples must have at least 5000 sequence reads (from the `*arthtable.qza` artifact), and (2) keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then apply the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample. This dataset was created by importing the `*arthtable.qza` file for each pipeline (dada2, deblur, or vsearch) into an R environment and applying the `sequence_filtering.R` script.
 
 ### Extra filtering approach
 The "extra" filter uses the same filtering criteria as the "standard" filter, but further requires that a fixed-count subtraction is applied to all reads per sequence variant per sample. This value is determined by first identifying which ASVs in a given mock sample are unexpected: those samples that have less than 97% identity to our known mock sequences. Once we have a list of the unexpected, or "miss" sequences, we identify the sequence variant among those "miss" variatns with the highest read count. That maximum value serves as the integer with which all sequence variants are reduced by.
@@ -370,37 +350,19 @@ qiime quality-control exclude-seqs --p-method vsearch \
 rm dada2.mock.exactMisses.qza
 ```
 
-We then export the `*mock.partialMisses.qza` file and create a list of those sequence HashIDs remaining among the "miss" variants. This list is then used to parse the original `*arthtable.qza` file, after which we export into a .qzv format to identify the value to be used for further data filtering (example below specific to dada2 dataset; process was repeated for deblur and vsearch):
+We then export the each of the `*.mock.qza` artifacts and save the HashIDs for each of the mock samples.
 ```
-qiime tools export --input-path dada2.mock.partialMisses.qza --output-path tmp
-echo '#OTU ID' > dada2.misslist.txt
-grep "^>" ./tmp/dna-sequences.fasta | sed 's/>//' >> dada2.misslist.txt
-rm -r tmp
-qiime feature-table filter-features \
-  --i-table dada2.arthtable.qza \
-  --m-metadata-file dada2.misslist.txt \
-  --o-filtered-table dada2.miss.table.tmp.qza
-qiime feature-table filter-samples \
-    --i-table dada2.miss.table.tmp.qza \
-    --m-metadata-file "$MOCKLIST" \
-    --o-filtered-table dada2.miss.table.qza  
-rm dada2.miss.table.tmp.qza    
-qiime tools export --input-path dada2.miss.table.qza --output-path tmp
-biom convert -i ./tmp/feature-table.biom -o dada2.miss.table.tsv --to-tsv
-rm -r tmp
+qiime tools export --input-path dada2.mock.exactHits.qza --output-path exact_seqs
+qiime tools export --input-path dada2.mock.partialHits.qza --output-path partial_seqs
+qiime tools export --input-path dada2.mock.partialMisses.qza --output-path miss_seqs
+
+grep "^>" ./exact_seqs/dna-sequences.fasta | sed 's/>//' > dada2.exactseqs.txt
+grep "^>" ./partial_seqs/dna-sequences.fasta | sed 's/>//' > dada2.partialseqs.txt
+grep "^>" ./miss_seqs/dna-sequences.fasta | sed 's/>//' > dada2.missseqs.txt
+
 ```
 
-We can then parse that `.tsv` file to determine what the maximum value is per Library. Each Library is then filtered according to that value. For example, to determine the dada2-filtered tables for LibraryD, we could run this one-liner:
-```
-cat dada2.miss.table.tsv | awk -F '\t' 'NR>1 {print $1,$5}' | sort -nr -k 2,2
-```
-and determine that the maximum value of a "miss" sequence variant is 23.
+These `*.txt` files are imported into the custom R script `sequence_filtering.R` to determine what the maximum value is per Library, per pipeline. Each Library of full guano data (or mock data) is then filtered according to that value.
 
-A summary of these values are provided in the table below:
-
-| Library | DADA2 | Deblur | Vsearch |
-| --- | --- |
-| LibA | 6 | 2 | 11 |
-| LibB | 13 | 5 | 15 |
-| LibC | 8 | 3 | 11 |
-| LibD | 23 | 8 | 26 |
+# Additional notes
+The output of this script and the additional `sequence_filtering.R` script generates all of the needed data structures for the section of the manuscript concerning filtering pipelines and parameters. An additional `diversity_script.R` provides the information required to generate the datasets for figures concerning alpha and beta diversity metrics. See the `database_filtering.md` document for details of bioinformatic processes used in the database-related section of the manscript. Additional R scripts are generated for each figure as needed; each figure has it's own R script for clarity.
