@@ -133,7 +133,10 @@ vs.miss$Method <- "vsearch"
 ## combine datasets
 all.mockalign <- rbind(da.exact, da.partial, da.miss, db.exact, db.partial, db.miss, vs.exact, vs.partial, vs.miss)
 rm(da.exact, da.partial, db.exact, db.partial, vs.exact, vs.partial)
-## create per-pipeline datasets too
+tmp <- all.mockalign
+tmp$Labeler <- paste(tmp$HashID, tmp$Method, sep = "-")
+write.csv(tmp, file="~/Repos/tidybug/data/text_tables/HashIDs_withFiltLabels.csv", quote = FALSE, row.names = FALSE)
+rm(tmp)
 
 ## Create a mock only dataframe to determine the maximum count value associated with a particular sequence variant..
 ## assigned as "miss", per library, per pipeline

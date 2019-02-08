@@ -1,5 +1,6 @@
 library(tidyverse)
 library(scales)
+library(ggrepel)
 
 # create theme function for all plots
 # theme function for custom plot style:
@@ -15,7 +16,7 @@ theme_devon <- function () {
 
 ## read in data and calculate sum of reads per Library, per Method
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
-LibSums <- df %>% group_by(Method, Library) %>% summarize(TrimSum=sum(Reads))
+LibSums <- df %>% filter(Filt=="basic") %>% group_by(Method, Library) %>% summarize(TrimSum=sum(Reads))
 
 ## add in raw read sums per library; raw "Joined" values assigned above derived by exporting "$LIB".joind.seqs.qza and ..
 ## ..counting number of N/4 lines of all data. see "seqfilter.qfilt_example.sh" for details
@@ -32,7 +33,7 @@ LibSums$JoindReads <- as.numeric(LibSums$JoindReads)
 LibSums <- LibSums %>% mutate(ReadsRetained = TrimSum/JoindReads)
 LibSums$Method <- factor(LibSums$Method,levels = c("vsearch", "dada2", "deblur"))
 
-## plot; exported at 750x300
+## plot; exported at 750x300; save as '2_figure_librarySizesByFilterMethod.png'
 ggplot(data = LibSums, aes(x = ReadsRetained, y = Method, label=Library)) + 
   geom_text_repel(vjust=1, nudge_y = 0.2, segment.alpha = 0.2) +
   geom_point() +
@@ -45,7 +46,7 @@ ggplot(data = LibSums, aes(x = ReadsRetained, y = Method, label=Library)) +
 
 ## calculate percentage of reads retained per Method (aggregate all Libraries)
 ## not used for plots; just used for calculation...
-MethodSums <- df %>% group_by(Method) %>% summarize(TrimSum=sum(Reads))
+MethodSums <- df %>% filter(Filt=="basic") %>% group_by(Method) %>% summarize(TrimSum=sum(Reads))
 JoinedReadSums <- sum(14724385, 17071355, 14279338, 14171652)
 MethodSums$JoinedReadSums <- JoinedReadSums
 MethodSums <- MethodSums %>% mutate(ReadsRetained = TrimSum/JoinedReadSums) %>% select(Method, ReadsRetained)
