@@ -4,6 +4,7 @@ library(tidyverse)
 library(reshape2)
 library(vegan)
 
+
 theme_devon <- function () { 
   theme_bw(base_size=12, base_family="Avenir") %+replace% 
     theme(
@@ -18,45 +19,38 @@ theme_devon <- function () {
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
 df <- df %>% filter(SampleType != "mock")
 
-## calculate alpha diversity (OTUs and Simpsons) for each dataframe, split by $Method (dada2, deblur, vsearch) and $Filt (basic, standard, extra)
-
-## create generic alpha function
-alpha.function <- function(data, filter_exp, filter_exp2, z) {
+## alpha function applied to calculate diversity measures: observed OTUs, simpson, and shannon
+alpha.function <- function(data, filter_exp, filter_exp2) {
   filter_exp_enq <- enquo(filter_exp)
   filter_exp_enq2 <- enquo(filter_exp2)
   tmp.df <- data %>% filter(!!filter_exp_enq) %>% filter(!!filter_exp_enq2)
+  tmp1 <- tmp.df %>% distinct(Method)
+  tmp2 <- tmp.df %>% distinct(Filt)
+  Label <- paste(tmp1, tmp2, sep="-")
   tmp.mat <- dcast(tmp.df, SeqID ~ HashID, value.var = "Reads", fill=0)
   row.names(tmp.mat) <- tmp.mat$SeqID
   tmp.mat$SeqID <- NULL
-  tmp.mat$simpson <- diversity(tmp.mat, index=z)
   SeqID <- row.names(tmp.mat)
-  AlphaVal <- tmp.mat[,ncol(tmp.mat)]
-  data.frame(SeqID, AlphaVal)
+  Simpson <- diversity(tmp.mat, index="simpson")
+  Shannon <- diversity(tmp.mat, index="shannon")
+  OTUs <- specnumber(tmp.mat)
+  data.frame(SeqID, OTUs, Simpson, Shannon, row.names = NULL)
 }
 
 ## calculate alphas
-dada2.basic.simpson <- alpha.function(df, Method=="dada2", Filt=="basic", "simpson")
-dada2.basic.simpson$Label <- "dada2-basic-simpson"
-dada2.standard.simpson <- alpha.function(df, Method=="dada2", Filt=="standard", "simpson")
-dada2.standard.simpson$Label <- "dada2-standard-simpson"
-dada2.extra.simpson <- alpha.function(df, Method=="dada2", Filt=="extra", "simpson")
-dada2.extra.simpson$Label <- "dada2-extra-simpson"
-deblur.basic.simpson <- alpha.function(df, Method=="deblur", Filt=="basic", "simpson")
-deblur.basic.simpson$Label <- "deblur-basic-simpson"
-deblur.standard.simpson <- alpha.function(df, Method=="deblur", Filt=="standard", "simpson")
-deblur.standard.simpson$Label <- "deblur-standard-simpson"
-deblur.extra.simpson <- alpha.function(df, Method=="deblur", Filt=="extra", "simpson")
-deblur.extra.simpson$Label <- "deblur-extra-simpson"
-vsearch.basic.simpson <- alpha.function(df, Method=="vsearch", Filt=="basic", "simpson")
-vsearch.basic.simpson$Label <- "vsearch-basic-simpson"
-vsearch.standard.simpson <- alpha.function(df, Method=="vsearch", Filt=="standard", "simpson")
-vsearch.standard.simpson$Label <- "vsearch-standard-simpson"
-vsearch.extra.simpson <- alpha.function(df, Method=="vsearch", Filt=="extra", "simpson")
-vsearch.extra.simpson$Label <- "vsearch-extra-simpson"
+dada2.basic <- alpha.function(df, Method=="dada2", Filt=="basic")
+dada2.standard <- alpha.function(df, Method=="dada2", Filt=="standard")
+dada2.extra <- alpha.function(df, Method=="dada2", Filt=="extra")
+deblur.basic <- alpha.function(df, Method=="deblur", Filt=="basic")
+deblur.standard <- alpha.function(df, Method=="deblur", Filt=="standard")
+deblur.extra <- alpha.function(df, Method=="deblur", Filt=="extra")
+vsearch.basic <- alpha.function(df, Method=="vsearch", Filt=="basic")
+vsearch.standard <- alpha.function(df, Method=="vsearch", Filt=="standard")
+vsearch.extra <- alpha.function(df, Method=="vsearch", Filt=="extra")
 
 ## merge into single dataframe
-all.simpson <- rbind(dada2.basic.simpson, dada2.standard.simpson, dada2.extra.simpson, deblur.basic.simpson, deblur.standard.simpson, deblur.extra.simpson, vsearch.basic.simpson, vsearch.standard.simpson, vsearch.extra.simpson)
-rm(dada2.basic.simpson, dada2.standard.simpson, dada2.extra.simpson, deblur.basic.simpson, deblur.standard.simpson, deblur.extra.simpson, vsearch.basic.simpson, vsearch.standard.simpson, vsearch.extra.simpson)
+all <- rbind(dada2.basic, dada2.standard, dada2.extra, deblur.basic, deblur.standard, deblur.extra, vsearch.basic, vsearch.standard, vsearch.extra)
+rm(dada2.basic, dada2.standard, dada2.extra, deblur.basic, deblur.standard, deblur.extra, vsearch.basic, vsearch.standard, vsearch.extra)
 rm(df)
 
 ## split the $Label

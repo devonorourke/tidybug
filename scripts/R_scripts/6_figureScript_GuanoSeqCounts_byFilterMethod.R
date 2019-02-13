@@ -22,7 +22,7 @@ df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tab
 df <- df %>% filter(SampleType != "mock")
 
 ## generate 3 color palette to distinguish between filtering pipelines:
-pipepal3 <- c('#9f9244', '#6c42b8', '#628a47', '#a9d190')
+pal3 <- c('#9f9244', '#6c42b8', '#628a47', '#a9d190')
 
 ## generate summaries for number of ASVs per sample, per pipeline and filtering method 
 df_hashCounts <- df %>% group_by(Method, Filt, SeqID, Library) %>% summarise(HashCounts=n())
@@ -32,13 +32,14 @@ df_hashCounts$Filt <- factor(df_hashCounts$Filt,levels = c("basic", "standard", 
 df_hashCounts$Method <- factor(df_hashCounts$Method,levels = c("dada2", "deblur", "vsearch"))
 
 ## plot; save as 6_figure_GuanoASVCounts_byFilterMethod
-ggplot(data = df_hashCounts, aes(x = Method, y = HashCounts, color=Method)) +
-  geom_hline(yintercept = 50, linetype="dotted", color="firebrick", size=1) +
+ggplot(data = df_hashCounts, aes(x = Filt, y = HashCounts, color=Filt)) +
+  #geom_hline(yintercept = 50, linetype="dotted", color="firebrick", size=1) +
   geom_jitter(alpha=0.55, width = 0.25) +
-  facet_grid(Filt ~ Library) +
-  scale_y_continuous(trans = "log2") +
-  scale_color_manual(values=pipepal3) +
+  facet_grid(Method ~ Library) +
+  #scale_y_continuous(trans = "log2") +
+  ylim(0,600) +
+  scale_color_manual(values=pal3) +
   labs(title="", x="", y="sequence variants per sample", color="") +
   theme_devon() +
-  theme(legend.position="top", legend.text = element_text(size = 12), axis.text.x = element_text(angle=22.5, hjust = 1))
-
+  #theme(legend.position="top", legend.text = element_text(size = 12), axis.text.x = element_text(angle=22.5, hjust = 1))
+  theme(legend.position="top", legend.text = element_text(size = 12), axis.text.x = element_blank(), axis.ticks.x = element_blank())
