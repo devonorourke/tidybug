@@ -2,6 +2,7 @@ library(tidyverse)
 library(reshape2)
 library(vegan)
 library(phyloseq)
+library(dunn.test)
 
 ## import data:
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
@@ -208,7 +209,24 @@ ggplot(all.betadist.df, aes(x=LegendLabel, y=betadistance, color=LegendLabel, sh
   scale_shape_manual(values=shape4) +
   labs(title="", x="", y="distance", color="", shape="") +
   theme_devon() +
-  theme(legend.position="none", axis.text.x = element_text(angle=22.5, hjust=1, size=9))
+  theme(legend.position="top", axis.text.x = element_text(angle=22.5, hjust=1, size=9)) +
+  guides(col=guide_legend(nrow = 3))
 
 # write to disk:
 write.csv(all.betadist.df, file="~/Repos/tidybug/data/text_tables/mock_betadist.out.csv", quote=FALSE, row.names = FALSE)
+
+
+## ANOVA estimate of variation
+tmp <- aov(betadistance ~ Method * Filt * RareType * BetaType, data = all.betadist.df)
+summary(tmp)
+
+## Kruskal-Wallis
+all.betadist.df$Labeler <- paste(all.betadist.df$Method, all.betadist.df$Filt, all.betadist.df$BetaType, all.betadist.df$RareType, sep="-")
+kruskal.test(betadistance ~ Labeler, data=all.betadist.df)
+all.betadist.df$Labeler <- as.factor(all.betadist.df$Labeler)
+
+## Dunn's test
+tmp.dunn = dunnTest(betadistance ~ Labeler, data=all.betadist.df, method="bh")
+mock.dunn.df <- (tmp.dunn$res)
+
+

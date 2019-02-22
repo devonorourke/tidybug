@@ -77,7 +77,7 @@ dadbq0 <- ggplot(data = mock.inext.q0 %>% filter(Method != "vsearch"), aes(x=x, 
   scale_color_manual(values=pal3) +
   scale_x_continuous(labels=comma) +
   ylim(0,47) +
-  labs(title="", x="", y="", caption = "Shared yaxis scale for dada2 and deblur facets; alternate yaxis scale for vsearch. Note the x-axis varies freely to account for varying library sizes") +
+  labs(title="", x="", y="number of sequence variants", caption = "Shared yaxis scale for dada2 and deblur facets; alternate yaxis scale for vsearch. Note the x-axis varies freely to account for varying library sizes") +
   theme_devon() + 
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         legend.position = "top", legend.title = element_blank())
@@ -92,7 +92,7 @@ vsq0 <- ggplot(data = mock.inext.q0 %>% filter(Method == "vsearch"), aes(x=x, y=
   scale_color_manual(values=pal3) +
   ylim(0,1000) +
   #ylim(0,165) +
-  labs(x="number of sequences", y="") +
+  labs(x="number of sequences", y="number of sequence variants") +
   theme_devon() +
   theme(axis.text.x = element_text(angle=22.5, hjust=1), legend.position = "none") +
   theme(strip.background.x = element_blank(), strip.text.x = element_blank())
@@ -110,7 +110,7 @@ ggplot(data = mock.inext.q2, aes(x=x, y=y, color=Filt, shape=Filt)) +
   facet_grid(Method ~ site, scales = "free_x") +
   scale_color_manual(values=pal3) +
   scale_x_continuous(labels=comma) +
-  labs(title="", x="number of sequences", y="") +
+  labs(title="", x="number of sequences", y="number of sequence variants") +
   theme_devon() + 
   theme(legend.position = "top", legend.title = element_blank(),
         axis.text.x = element_text(angle=22.5, hjust=1))

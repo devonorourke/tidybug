@@ -21,8 +21,8 @@ df$Labeler <- paste(df$Method, df$Filt, df$Library, sep="-")
 
 ## create similar dataframe with rarefied data:
 rrarewithdrop <- function(x, sample) {
-  rrarefy(x[rowSums(x) >= sample, , drop = FALSE], sample)
-}
+    rrarefy(x[rowSums(x) >= sample, , drop = FALSE], sample)
+  }
 
 rare.function <- function(data, filter_exp, filter_exp2) {
   filter_exp_enq <- enquo(filter_exp)
@@ -109,11 +109,11 @@ rarefied.vsearch.extra <- hillnumber.function(df, Method=="vsearch", Filt=="extr
 
 ## merge into single dataframe
 all.guano.hill <- rbind(unrarefied.dada2.basic, unrarefied.dada2.standard, unrarefied.dada2.extra, 
-                        unrarefied.deblur.basic, unrarefied.deblur.standard, unrarefied.deblur.extra, 
-                        unrarefied.vsearch.basic, unrarefied.vsearch.standard, unrarefied.vsearch.extra,
-                        rarefied.dada2.basic, rarefied.dada2.standard, rarefied.dada2.extra, 
-                        rarefied.deblur.basic, rarefied.deblur.standard, rarefied.deblur.extra, 
-                        rarefied.vsearch.basic, rarefied.vsearch.standard, rarefied.vsearch.extra)
+                     unrarefied.deblur.basic, unrarefied.deblur.standard, unrarefied.deblur.extra, 
+                     unrarefied.vsearch.basic, unrarefied.vsearch.standard, unrarefied.vsearch.extra,
+                     rarefied.dada2.basic, rarefied.dada2.standard, rarefied.dada2.extra, 
+                     rarefied.deblur.basic, rarefied.deblur.standard, rarefied.deblur.extra, 
+                     rarefied.vsearch.basic, rarefied.vsearch.standard, rarefied.vsearch.extra)
 
 rm(list=ls(pattern = "rarefied*"))
 
@@ -130,64 +130,47 @@ u.q2.hill.df <- all.guano.hill %>% filter(Hill_qType == "q=2")
 
 ## generate palette for 6 colors following plot5 color scheme but altering hue:
 #pal3 <- c('#9f9244', '#6c42b8', '#628a47')
-pal6 <- c('#9f9244', '#6c42b8', '#628a47',
-          '#ebdb8e', '#c8b2e8', '#a9d190')
+pal6 <- c('#9f9244', '#ebdb8e', '#6c42b8', '#c8b2e8', '#628a47', '#a9d190')
+shape6 <- c(0,15,1,16,2,17)
 
 ## order levels:
-all.guano.hill$Grouper <- factor(all.guano.hill$Grouper, levels = c("basic-unrarefied", "standard-unrarefied","extra-unrarefied",
-                                                                    "basic-rarefied", "standard-rarefied", "extra-rarefied"))
+all.guano.hill$Grouper <- factor(all.guano.hill$Grouper, levels = c("basic-unrarefied", basic-unrarefied,
+                                                                    standard-unrarefied, standard-unrarefied,
+                                                                    extra-unrarefied, extra-unrarefied))
 
 ## make separate plots per qtype, then merge into single figure
-q0 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=0"),
-             aes(x=Grouper, y=Hill_value, color=Grouper, group=Grouper)) +
-  scale_color_manual(values = pal6) +
+#plot.q0 <- ggplot(q0.hill.df, aes(x=Filt, y=Hill_value, color=Filt, group=Filt, shape=Filt)) +
+plot.q0U <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=0", RarefyType=="unrarefied"),
+       aes(x=Filt, y=Hill_value, color=Filt, group=Filt, shape=Filt)) +
+  scale_color_manual(values = pal3) +
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
-  scale_y_continuous(limits = c(0,400)) +
+  scale_y_continuous(limits = c(0,532)) +
   facet_grid( ~ Labeler) +
-  #labs(title = "", x="", y="sequence variants", color="", shape="", caption = "13 outliers with > 400 sequence variants (all Vsearch) not shown") +
+  labs(title = "", x="", y="sequence variants", color="", shape="",
+       caption = "7 outliers with > 550 sequence variants not shown (all `Vsearch + Basic`)") +
+  theme_devon() + theme(legend.position = "top", axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+plot.q1U <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=1", RarefyType=="unrarefied"),
+                   aes(x=Filt, y=Hill_value, color=Filt, group=Filt, shape=Filt)) +
+  scale_color_manual(values = pal3) +
+  geom_boxplot(outlier.shape = NA) +
+  #scale_y_continuous(limits = c(0,51)) +
+  geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
+  facet_grid( ~ Labeler) +
   labs(title = "", x="", y="sequence variants", color="", shape="") +
-  theme_devon() + theme(legend.position = "top", 
-                        axis.text.x = element_blank(),
-                        #axis.text.x = element_text(angle = 22.5, hjust=1), 
-                        axis.ticks.x = element_blank(),
-                        axis.title.y = element_text(size = 10),
-                        plot.margin = margin(c(0,1.2,0,0), unit = "cm")) +
-  guides(col = guide_legend(nrow = 1))
+  theme_devon() + theme(legend.position = "none", axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
-
-q1 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=1"),
-             aes(x=Grouper, y=Hill_value, color=Grouper, group=Grouper)) +
-  scale_color_manual(values = pal6) +
+plot.q2U <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=2", RarefyType=="unrarefied"),
+                   aes(x=Filt, y=Hill_value, color=Filt, group=Filt, shape=Filt)) +
+  scale_color_manual(values = pal3) +
   geom_boxplot(outlier.shape = NA) +
+  #scale_y_continuous(limits = c(0,51)) +
   geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
   facet_grid( ~ Labeler) +
-  scale_y_continuous(limits = c(0,51)) +
-  labs(title = "", x="", y="sequence variant equivalents", color="", shape="") +
-  theme_devon() + 
-  theme(legend.position = "none", 
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.title.y = element_text(size = 10),
-        plot.margin = margin(c(0,1.2,0,0), unit = "cm"))
-
-
-q2 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=2"),
-             aes(x=Grouper, y=Hill_value, color=Grouper, group=Grouper)) +
-  scale_color_manual(values = pal6) +
-  geom_boxplot(outlier.shape = NA) +
-  geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
-  facet_grid( ~ Labeler) +
-  scale_y_continuous(limits = c(0,51)) +
-  labs(title = "", x="", y="sequence variant equivalents", color="", shape="") +
-  theme_devon() + theme(legend.position = "none", 
-                        #axis.text.x = element_blank(),
-                        axis.text.x = element_text(angle = -30, hjust=0, size = 8), 
-                        axis.ticks.x = element_blank(),
-                        axis.title.y = element_text(size = 10),
-                        plot.margin = margin(c(0,1.2,0,0), unit = "cm"))
+  labs(title = "", x="", y="sequence variants", color="", shape="") +
+  theme_devon() + theme(legend.position = "none", axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 
 ## plot; save as 10_guanoAlpha_HillNumbers; export at 1000x1000
-plot_grid(q0,q1,q2, ncol=1, rel_heights = c(1.2, 1, 1.2))
-
+plot_grid(plot.q0U, plot.q1U, plot.q2U, ncol=1, rel_heights = c(1.3, 1, 1))
