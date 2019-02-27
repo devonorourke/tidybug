@@ -152,7 +152,7 @@ vsearch --cluster_size boldCOI.derep.fasta --threads 24 --strand both --fasta_wi
 done
 ```
 
-These clustered `.fasta` records serve as inputs for subsequent analyses in the `database_analyses.R` script.
+These clustered `.fasta` records serve as inputs for subsequent analyses described in the `database_analyses.md` document.
 
 ## Formatting data for QIIME import
 Two files are required for importing into QIIME2 to perform classification: (1) a taxonomy file, and (2) a fasta file. The taxonomy file uses the same 2 column format as the `outmap.txt` file, except we're only going to retain the records present in the dereplicated dataset. The `boldCOI.derep.fasta` file contains the correct format for import.
