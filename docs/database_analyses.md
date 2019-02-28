@@ -30,7 +30,7 @@ wget https://github.com/terrimporter/CO1Classifier/releases/download/v3.2-ref/CO
 tar xzf CO1v3_2_training.tar.gz
 ```
 
-Note that both the Palmer and Porter databases contain non-arthropod COI sequences. In the case of the Palmer dataset, it contains chordate and athropod recrds, while the Porter dataset contains chordate, arthropod, and microeukaryote COI sequences. For the purposes of our evaluations, we restricted our comparisons to records identified as Arthropod and ignored all non-arthropod records.
+Note that both the Palmer and Porter databases contain non-arthropod COI sequences. In the case of the Palmer dataset, it contains chordate and athropod recrds, while the Porter dataset contains chordate, arthropod, and microeukaryote COI sequences. For the purposes of our evaluations, we restricted our comparisons to records identified as Arthropod and ignored all non-arthropod records. In addition, the Porter dataset is _not_ dereplicated, thus we created both a dereplicated and non-dereplicated dataset for different downstream analyses (see `database_composition.R` script). The Palmer data is already dereplicated.
 
 Filtering the Palmer dataset:
 ```
@@ -40,17 +40,18 @@ seqkit grep -r -p 'p:Arthropoda' amptk.coi.fasta -w 0 > palmer.arthCOI.fasta
 ```
 This reduces the initial **1,617,885** COI records down to **1,565,831** sequences.
 
-Filtering the Porter dataset:
+Filtering and dereplicating the Porter dataset:
 ```
-grep ';Arthropoda;' -A 1 mytrainseq.fasta > porter.arthCOI.fasta
+grep ';Arthropoda;' -A 1 mytrainseq.fasta |  sed '/--/d' > porter.arthCOI.fasta
+vsearch --derep_fulllength porter.arthCOI.fasta --output porter.derep.fasta --relabel_keep --threads 4 --fasta_width 0 --notrunclabels
 ```
-This reduces the initial **1,280,577** COI records down to **883,979** sequences.
+Filtering for Arthropod recoreds reduces the initial **1,280,577** COI records down to **883,979** sequences. Dereplication further reduces these records down to **515,780** disintct sequences.
 
 ## Database questions to address
 Using the arthropod-selected Palmer and Porter databases, the raw BOLD COI records we retained with the `bold_datapull.R` script, and  the resulting filtered dataset (see `database_construction.md`), we addressed the following questions:
 How do these datasets compare with respect to
   - distribution of sequence length?
-  - taxonomic composition?
+  - number of unique taxa per level
   - missingness/completeness?
 
 Specific to our BOLD datasets, we evaluated:
@@ -62,12 +63,12 @@ Specific to our filtered BOLD dataset:
 
 # Analyses
 ## Distribution of sequence lengths:
-We evaluated the distribution of sequence lengths among each of the four datasets:
+We evaluated the distribution of sequence lengths among each of the four datasets. Note that for the Porter dataset we only used the dereplicated data so as to not double count identical sequences.
 ```
-seqkit fx2tab --length --name --header-line palmer.arthCOI.fasta | cut -f 4 > palmer.lengths.txt
-seqkit fx2tab --length --name --header-line porter.arthCOI.fasta | cut -f 4 > porter.lengths.txt
-seqkit fx2tab --length --name --header-line boldCOI.derep.fasta | cut -f 4 > my.derep.lengths.txt
-zcat boldCustom.allArth.seqNtaxa.csv.gz | cut -f 3 -d ',' | awk 'NR > 1 { print length }' > my.raw.lengths
+seqkit fx2tab --length --name --header-line palmer.arthCOI.fasta | cut -f 4 | gzip --best > palmer.lengths.txt.gz
+seqkit fx2tab --length --name --header-line porter.derep.fasta | cut -f 4 | gzip --best > porter.lengths.txt.gz
+seqkit fx2tab --length --name --header-line boldCOI.derep.fasta | cut -f 4 | gzip --best > derep.lengths.txt.gz
+zcat boldCustom.allArth.seqNtaxa.csv.gz | cut -f 3 -d ',' | awk 'NR > 1 { print length }' | gzip --best > raw.lengths.txt.gz
 ```
 These files were used to generate the plot with the R script `database_lengths.R`
 
@@ -80,34 +81,35 @@ The next most frequently observed length for most datasets ranges is observed fo
 
 
 ## Distribution of taxonomic composition and taxonomic completeness
-Porportions of taxa represented at Class and Order levels were assessed for each of the four databases. In addition, taxonomic completeness was evaluated by determining the number of instances in which Class, Order, Family, Genus, or Species levels were lacking information. We included records that contained any information in the Species designation including an arbitrary "sp." marker, thus these results represent a liberal estimate of Species information. Of note, because the `bold_datapull.R` script used to download data specified either Class or Order names to pull data, we are potentially discarding records within BOLD that contain a COI marker but no Phylum or Class information - we made no attempts at determining how pervasive this level of missingness could be. However, these same levels _can_ potentially be missing from the alternative databases if they didn't pull the data the same way. For instance, Jon Palmer's method involved manually downloading all Chordate and Arthropod records from the BOLD website directly (not via their API), thus his dataset will likely contain some degre of missingness at Phylum/Class levels. The Porter method queried NCBI with a Perl script that specified that "species" [RANK] be included for the Arthropod records, so it's likely that there is little, if any, taxonomic information missing from this dataset - however, by requiring species-level information, certain taxa may no longer be represented at higher levels. These discrepencies are evaluated in the `classification_analyses.md` document.
+Proportions of unique taxa represented from Class to Species levels were assessed for each of the four databases. In addition, taxonomic completeness was evaluated by determining the number of instances in which no data was present at a given taxonomic Level (Class through Species). Finally, we also evaluated the most abundant (top 20) taxa for Class through Genus Levels in the three dereplicated datasets (Palmer, Porter, and ours), though we also retained the full Porter dataset and our own non-dereplicated dataset to illustrate how some records are represented hundreds or thousands of times in raw data.
+We included records that contained any information in the Species designation including an arbitrary "sp." marker, thus these results represent a liberal estimate of Species information. Of note, because the `bold_datapull.R` script used to download data specified either Class or Order names to pull data, we are potentially discarding records within BOLD that contain a COI marker but no Phylum or Class information - we made no attempts at determining how pervasive this level of missingness could be. In addition, the Porter method queried NCBI with a Perl script that specified that "species" [RANK] be included for the Arthropod records, so there should not be any taxonomic information missing from this dataset (however, by requiring species-level information, certain taxa may no longer be represented at higher levels). These discrepancies are evaluated in the `classification_analyses.md` document.
 
-We pulled the taxa strings from the Porter and Palmer datasets as follows:
+We pulled the taxa strings from the Palmer and Porter (dereplicated and non-dereplicated) datasets. Only the dereplicated Porter dataset was used for analysis of the taxa, :
 ```
-cat palmer.arthCOI.fasta | grep '^>' | cut -d ',' -f2- > palmer.taxa.txt
-cat porter.arthCOI.fasta | grep '^>' | cut -f4- -d ';' > porter.taxa.txt
-
+cat palmer.arthCOI.fasta | grep '^>' | cut -d ',' -f2- | awk -F ',' '{print $2,$3,$4,$5,$6}' OFS=',' | gzip --best > palmer.taxa.txt.gz
+cat porter.arthCOI.fasta | grep '^>' | cut -f5- -d ';' | tr ';' ',' | gzip --best > porter.all.taxa.txt.gz
+cat porter.derep.fasta | grep '^>' | cut -f5- -d ';' | tr ';' ',' | gzip --best > porter.derep.taxa.txt.gz
 ```
 
-The raw dataset was saved earlier in the `bold_datapull.R` script in a format ready for direct R import (see file`boldCustom.allArth.meta.txt`) while the dereplicated dataset taxa information is present in the `boldCOI.derep.txt` and can be imported into R directly.
-
-These files were used to generate the plots with the R script:
-
-**what is the name of the R script**
-**what is the name of the R script**
-**what is the name of the R script**
-**what is the name of the R script**
-**what is the name of the R script**
-**what is the name of the R script**
+We modified our dereplicated and raw datasets, `boldCOI.derep.txt` and `boldCustom.allArth.meta.txt.gz`, to reduce disk space by pulling just the taxa strings from Class through Species:
+```
+zcat boldCOI.derep.txt.gz | cut -d ';' -f 3- | gzip --best > derep.taxa.txt.gz
+zcat boldCustom.allArth.meta.txt.gz | cut -d ';' -f 8-13 | gzip --best > raw.taxa.txt.gz
+```
+The `*lengths.txt` and `*taxa.txt.gz` files were used to generate the tables with the R script `database_composition.R`.
 
 ## Impact of clustering on taxonomic completeness
-In addition to the comparisons evaluating taxonomic completeness based on the database being evaluated, we analyzed how clustering a dataset can effect the remaining taxa. Data was clustered with Vsearch as described in the `database_construction.md` document; briefly, we clustered the `boldCOI.derep.fasta` file at three values: 99%, 97%, and 95% identity.
+In addition to the comparisons evaluating taxonomic completeness based on the database being evaluated, we analyzed how clustering a dataset can effect the remaining taxa. We clustered the `boldCOI.derep.fasta` file at three values: 99%, 97%, and 95% identity using Vsearch as described in the `database_construction.md` document.
 
-The remaining sequenceID records for each clustered fasta were imported into an **R script** to create the plots.
-**what is the name of the R script**
-**what is the name of the R script**
-**what is the name of the R script**
-**what is the name of the R script**
+The remaining sequenceID records for each clustered fasta were obtained from each fasta, then imported into the `database_clustering.R` script to create the plot.
+
+```
+cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' | gzip --best > clust99.names.txt.gz
+cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' | gzip --best > clust97.names.txt.gz
+cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' | gzip --best > clust95.names.txt.gz
+```
+
+Taxonomic info for each record in the `clust*.gz` files were subset from the `boldCOI.derep.txt.gz` file.
 
 ## Impact of geographic specificity
 We restricted these analyses to our own datasets - the raw and dereplicated records. The `boldCustom.allArth.meta.txt` served as the raw input, with the Sequence ID's present from the `boldCOI.derep.txt` file acting as a filter for comparison. To understand the impact on geographic specificity on taxonomic composition of a database, we filtered our BOLD records by requiring that the `country` column in the BOLD dataset contain either `United States` or `Canada` records. We then investigated how this effects the taxonomic composition at the Class and Order levels, as well as the proportional representation of sequence records from the top 10 sources listed in the `institution_storing` field of the BOLD dataset.

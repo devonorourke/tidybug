@@ -1,0 +1,303 @@
+"TaxaName","counts","Level","Database","nObs","pCounts"
+"Insecta",1457276,"Class","Palmer",1565808,0.930686265493598
+"Arachnida",73547,"Class","Palmer",1565808,0.0469706375238854
+"Collembola",20277,"Class","Palmer",1565808,0.0129498635848073
+"Malacostraca",9149,"Class","Palmer",1565808,0.00584298968966821
+"Hexanauplia",2175,"Class","Palmer",1565808,0.00138905919499709
+"Branchiopoda",1559,"Class","Palmer",1565808,0.000995652085057683
+"Diplopoda",523,"Class","Palmer",1565808,0.000334012854705047
+"Ostracoda",472,"Class","Palmer",1565808,0.000301441811512012
+"Chilopoda",449,"Class","Palmer",1565808,0.000286752909679859
+"Pycnogonida",232,"Class","Palmer",1565808,0.000148166314133023
+"Protura",96,"Class","Palmer",1565808,6.13101989515956e-05
+"Diplura",20,"Class","Palmer",1565808,1.27729581149158e-05
+"Symphyla",20,"Class","Palmer",1565808,1.27729581149158e-05
+"Ichthyostraca",7,"Class","Palmer",1565808,4.47053534022051e-06
+"Pauropoda",5,"Class","Palmer",1565808,3.19323952872894e-06
+"Merostomata",1,"Class","Palmer",1565808,6.38647905745787e-07
+"Diptera",631387,"Order","Palmer",1565669,0.403269784354164
+"Lepidoptera",380474,"Order","Palmer",1565669,0.243010495832772
+"Hymenoptera",224781,"Order","Palmer",1565669,0.143568659786966
+"Coleoptera",96309,"Order","Palmer",1565669,0.061513001790289
+"Hemiptera",65551,"Order","Palmer",1565669,0.0418677255537409
+"Araneae",38443,"Order","Palmer",1565669,0.0245537211249632
+"Trichoptera",18343,"Order","Palmer",1565669,0.0117157585671045
+"Trombidiformes",14825,"Order","Palmer",1565669,0.00946879576717684
+"Entomobryomorpha",13534,"Order","Palmer",1565669,0.00864422812229149
+"Sarcoptiformes",11146,"Order","Palmer",1565669,0.0071190015258653
+"Psocodea",7845,"Order","Palmer",1565669,0.00501063762519409
+"Mesostigmata",7097,"Order","Palmer",1565669,0.00453288658075238
+"Ephemeroptera",6774,"Order","Palmer",1565669,0.00432658499337983
+"Thysanoptera",5612,"Order","Palmer",1565669,0.00358441024252253
+"Orthoptera",5137,"Order","Palmer",1565669,0.00328102555520995
+"Decapoda",4269,"Order","Palmer",1565669,0.00272662995818401
+"Neuroptera",3700,"Order","Palmer",1565669,0.00236320703801378
+"Symphypleona",3661,"Order","Palmer",1565669,0.00233829755842391
+"Odonata",3632,"Order","Palmer",1565669,0.00231977512488272
+"Plecoptera",3627,"Order","Palmer",1565669,0.00231658160185838
+"others",19522,"Order","Palmer",1565669,0.0124687912962446
+"Chironomidae",99576,"Family","Palmer",1196305,0.0832362984355996
+"Cecidomyiidae",91745,"Family","Palmer",1196305,0.0766903089095172
+"Geometridae",46236,"Family","Palmer",1196305,0.0386490067332327
+"Sciaridae",42298,"Family","Palmer",1196305,0.0353572040574937
+"Phoridae",42260,"Family","Palmer",1196305,0.0353254395827151
+"Ichneumonidae",40248,"Family","Palmer",1196305,0.0336435942339119
+"Erebidae",33426,"Family","Palmer",1196305,0.0279410351039242
+"Braconidae",31304,"Family","Palmer",1196305,0.0261672399597093
+"Noctuidae",27346,"Family","Palmer",1196305,0.0228587191393499
+"Formicidae",22352,"Family","Palmer",1196305,0.0186841984276585
+"Cicadellidae",20797,"Family","Palmer",1196305,0.0173843626834294
+"Platygastridae",20575,"Family","Palmer",1196305,0.017198791278144
+"Ceratopogonidae",18963,"Family","Palmer",1196305,0.015851308821747
+"Tortricidae",17780,"Family","Palmer",1196305,0.0148624305674556
+"Mycetophilidae",16987,"Family","Palmer",1196305,0.0141995561332603
+"Crambidae",16814,"Family","Palmer",1196305,0.0140549441822946
+"Muscidae",16256,"Family","Palmer",1196305,0.013588507947388
+"Gelechiidae",14670,"Family","Palmer",1196305,0.0122627590789974
+"Dolichopodidae",13398,"Family","Palmer",1196305,0.0111994850811457
+"Saturniidae",11884,"Family","Palmer",1196305,0.00993392153338822
+"others",551390,"Family","Palmer",1196305,0.460910888109638
+"Megaselia",32403,"Genus","Palmer",862610,0.037563904893289
+"Limnophyes",6484,"Genus","Palmer",862610,0.00751672250495589
+"Tanytarsus",6100,"Genus","Palmer",862610,0.00707156188775924
+"Telenomus",5761,"Genus","Palmer",862610,0.00667856853039033
+"Psychoda",5517,"Genus","Palmer",862610,0.00639570605487996
+"Chironomus",5220,"Genus","Palmer",862610,0.00605140214001693
+"Corynoptera",4673,"Genus","Palmer",862610,0.00541728011499983
+"Cricotopus",4642,"Genus","Palmer",862610,0.00538134266934072
+"Simulium",4132,"Genus","Palmer",862610,0.00479011372462642
+"Bradysia",4121,"Genus","Palmer",862610,0.00477736172777965
+"Smittia",4064,"Genus","Palmer",862610,0.00471128319866452
+"Forcipomyia",4036,"Genus","Palmer",862610,0.00467882357032726
+"Empoasca",3899,"Genus","Palmer",862610,0.00452000324596283
+"Coleophora",3718,"Genus","Palmer",862610,0.00431017493421129
+"Aedes",3283,"Genus","Palmer",862610,0.00380589142254321
+"Orthocladius",3234,"Genus","Palmer",862610,0.00374908707295301
+"Helina",3217,"Genus","Palmer",862610,0.00372937944146254
+"Dolichopus",3037,"Genus","Palmer",862610,0.00352071040215161
+"Entomobrya",3023,"Genus","Palmer",862610,0.00350448058798298
+"Suillia",2938,"Genus","Palmer",862610,0.0034059424305306
+"others",749108,"Genus","Palmer",862610,0.868420259445172
+"Scathophaga furcata",1746,"Species","Palmer",551862,0.00316383443687009
+"Paraphaenocladius impensus",1632,"Species","Palmer",551862,0.00295726105439403
+"Scatopsciara atomaria",1544,"Species","Palmer",551862,0.00279780089950024
+"Tanytarsus mendax",1530,"Species","Palmer",551862,0.00277243223849441
+"Megaselia pulicaria complex",1432,"Species","Palmer",551862,0.00259485161145359
+"Corynoptera trepida",1359,"Species","Palmer",551862,0.00246257216478033
+"Ablabesmyia americana",1091,"Species","Palmer",551862,0.00197694351124013
+"Megaselia arcticae",1074,"Species","Palmer",551862,0.00194613870859019
+"Helina evecta",1045,"Species","Palmer",551862,0.00189358933936383
+"Megaselia rufipes",929,"Species","Palmer",551862,0.00168339186245837
+"Scoparia biplagialis",890,"Species","Palmer",551862,0.00161272202108498
+"Megaselia diversa",852,"Species","Palmer",551862,0.0015438642269263
+"Philygria debilis",851,"Species","Palmer",551862,0.00154205217971159
+"Cricotopus triannulatus",849,"Species","Palmer",551862,0.00153842808528219
+"Limnophyes minimus",821,"Species","Palmer",551862,0.00148769076327053
+"Suillia nemorum",799,"Species","Palmer",551862,0.00144782572454708
+"Leptocera erythrocera",775,"Species","Palmer",551862,0.00140433659139423
+"Ctenosciara hyalipennis",737,"Species","Palmer",551862,0.00133547879723554
+"Micropsectra subletteorum",727,"Species","Palmer",551862,0.00131735832508852
+"Gymnometriocnemus brumalis",688,"Species","Palmer",551862,0.00124668848371513
+"others",530491,"Species","Palmer",551862,0.961274738974599
+"Insecta",423384,"Class","Porter",515780,0.820861607662182
+"Arachnida",38390,"Class","Porter",515780,0.0744309589359805
+"Malacostraca",32304,"Class","Porter",515780,0.0626313544534491
+"Maxillopoda",10873,"Class","Porter",515780,0.0210806933188569
+"Collembola",4974,"Class","Porter",515780,0.00964364651595642
+"Branchiopoda",2692,"Class","Porter",515780,0.00521927953778743
+"Diplopoda",940,"Class","Porter",515780,0.00182248245375935
+"Ostracoda",938,"Class","Porter",515780,0.00181860483151731
+"Chilopoda",675,"Class","Porter",515780,0.0013086975066889
+"Pycnogonida",517,"Class","Porter",515780,0.00100236534956765
+"Pauropoda",29,"Class","Porter",515780,5.62255225095971e-05
+"Diplura",24,"Class","Porter",515780,4.65314669044942e-05
+"Remipedia",21,"Class","Porter",515780,4.07150335414324e-05
+"Protura",13,"Class","Porter",515780,2.52045445732677e-05
+"Cephalocarida",3,"Class","Porter",515780,5.81643336306177e-06
+"Merostomata",2,"Class","Porter",515780,3.87762224204118e-06
+"Symphyla",1,"Class","Porter",515780,1.93881112102059e-06
+"Lepidoptera",127968,"Order","Porter",515780,0.248105781534763
+"Diptera",111216,"Order","Porter",515780,0.215626817635426
+"Coleoptera",76170,"Order","Porter",515780,0.147679243088138
+"Hymenoptera",36817,"Order","Porter",515780,0.0713812090426151
+"Hemiptera",31986,"Order","Porter",515780,0.0620148125169646
+"Araneae",29043,"Order","Porter",515780,0.056308891387801
+"Decapoda",20139,"Order","Porter",515780,0.0390457171662337
+"Trichoptera",14591,"Order","Porter",515780,0.0282891930668114
+"Amphipoda",6424,"Order","Porter",515780,0.0124549226414363
+"Orthoptera",5361,"Order","Porter",515780,0.0103939664197914
+"Sessilia",5038,"Order","Porter",515780,0.00976773042770173
+"Ephemeroptera",4934,"Order","Porter",515780,0.00956609407111559
+"Entomobryomorpha",4170,"Order","Porter",515780,0.00808484237465586
+"Isopoda",3759,"Order","Porter",515780,0.0072879910039164
+"Calanoida",3515,"Order","Porter",515780,0.00681492109038737
+"Odonata",3276,"Order","Porter",515780,0.00635154523246345
+"Sarcoptiformes",2643,"Order","Porter",515780,0.00512427779285742
+"Plecoptera Insecta",2362,"Order","Porter",515780,0.00457947186785063
+"Thysanoptera",2113,"Order","Porter",515780,0.00409670789871651
+"Diplostraca",2020,"Order","Porter",515780,0.00391639846446159
+"others",22235,"Order","Porter",515780,0.0431094652758928
+"Chironomidae",22731,"Family","Porter",515780,0.044071115591919
+"Noctuidae",19966,"Family","Porter",515780,0.0387103028422971
+"Geometridae",17011,"Family","Porter",515780,0.0329811159796813
+"Nymphalidae",10980,"Family","Porter",515780,0.0212881461088061
+"Curculionidae",10215,"Family","Porter",515780,0.0198049556012253
+"Erebidae",9695,"Family","Porter",515780,0.0187967738182946
+"Formicidae",8819,"Family","Porter",515780,0.0170983752762806
+"Carabidae",8453,"Family","Porter",515780,0.016388770405987
+"Culicidae",8385,"Family","Porter",515780,0.0162569312497576
+"Chrysomelidae",8251,"Family","Porter",515780,0.0159971305595409
+"Cicadellidae",8013,"Family","Porter",515780,0.015535693512738
+"Muscidae",7659,"Family","Porter",515780,0.0148493543758967
+"Crambidae",7574,"Family","Porter",515780,0.01468455543061
+"Tortricidae",7419,"Family","Porter",515780,0.0143840397068518
+"Staphylinidae",6830,"Family","Porter",515780,0.0132420799565706
+"Sciaridae",6771,"Family","Porter",515780,0.0131276901004304
+"Linyphiidae",6544,"Family","Porter",515780,0.0126875799759587
+"Aphididae",6065,"Family","Porter",515780,0.0117588894489899
+"Dytiscidae",5132,"Family","Porter",515780,0.00994997867307767
+"Tephritidae",4976,"Family","Porter",515780,0.00964752413819846
+"others",324291,"Family","Porter",515780,0.628738997246888
+"Anopheles",3840,"Genus","Porter",515780,0.00744503470471907
+"Tanytarsus",2697,"Genus","Porter",515780,0.00522897359339253
+"Simulium",2680,"Genus","Porter",515780,0.00519601380433518
+"Bactrocera",2550,"Genus","Porter",515780,0.00494396835860251
+"Megaselia",2538,"Genus","Porter",515780,0.00492070262515026
+"Chironomus",2266,"Genus","Porter",515780,0.00439334600023266
+"Entomobrya",2199,"Genus","Porter",515780,0.00426344565512428
+"Corynoptera",2001,"Genus","Porter",515780,0.0038795610531622
+"Helina",1899,"Genus","Porter",515780,0.0036818023188181
+"Limnophyes",1898,"Genus","Porter",515780,0.00367986350769708
+"Drosophila",1872,"Genus","Porter",515780,0.00362945441855054
+"Chthamalus",1834,"Genus","Porter",515780,0.00355577959595176
+"Bradysia",1748,"Genus","Porter",515780,0.00338904183954399
+"Cricotopus",1699,"Genus","Porter",515780,0.00329404009461398
+"Scathophaga",1680,"Genus","Porter",515780,0.00325720268331459
+"Suillia",1652,"Genus","Porter",515780,0.00320291597192602
+"Ochlerotatus",1647,"Genus","Porter",515780,0.00319322191632091
+"Carabus",1601,"Genus","Porter",515780,0.00310403660475396
+"Paratanytarsus",1576,"Genus","Porter",515780,0.00305556632672845
+"Bombus",1517,"Genus","Porter",515780,0.00294117647058824
+"others",474386,"Genus","Porter",515780,0.919744852456474
+"Bactrocera dorsalis",1511,"Species","Porter",515780,0.00292954360386211
+"Scathophaga furcata",1479,"Species","Porter",515780,0.00286750164798945
+"Paratanytarsus laccophilus",1235,"Species","Porter",515780,0.00239443173446043
+"Tanytarsus mendax",1209,"Species","Porter",515780,0.00234402264531389
+"Paraphaenocladius impensus",1107,"Species","Porter",515780,0.00214626391096979
+"Phoridae BOLD-2016",988,"Species","Porter",515780,0.00191554538756834
+"Entomobrya nivalis",948,"Species","Porter",515780,0.00183799294272752
+"Gymnometriocnemus brumalis",897,"Species","Porter",515780,0.00173911357555547
+"Plutella xylostella",849,"Species","Porter",515780,0.00164605064174648
+"Megaselia arcticae",833,"Species","Porter",515780,0.00161502966381015
+"Philygria obtecta",796,"Species","Porter",515780,0.00154329365233239
+"Helina evecta",686,"Species","Porter",515780,0.00133002442902012
+"Cortinicara gibbosa",658,"Species","Porter",515780,0.00127573771763155
+"Delia platura",652,"Species","Porter",515780,0.00126410485090542
+"Scatopsciara atomaria",602,"Species","Porter",515780,0.0011671642948544
+"Phyllocnistis populiella",598,"Species","Porter",515780,0.00115940905037031
+"Tetraclita rubescens",592,"Species","Porter",515780,0.00114777618364419
+"Dicrotendipes tritomus",583,"Species","Porter",515780,0.001130326883555
+"Cricotopus triannulatus",581,"Species","Porter",515780,0.00112644926131296
+"Megaselia rufipes",572,"Species","Porter",515780,0.00110899996122378
+"others",498404,"Species","Porter",515780,0.966311217961146
+"Insecta",1624560,"Class","derep",1841305,0.882287290807335
+"Arachnida",110002,"Class","derep",1841305,0.0597413247669452
+"Malacostraca",43696,"Class","derep",1841305,0.0237309951366015
+"Collembola",37099,"Class","derep",1841305,0.0201482101009882
+"Hexanauplia",15454,"Class","derep",1841305,0.00839296042752287
+"Branchiopoda",5609,"Class","derep",1841305,0.00304620907454224
+"Ostracoda",1471,"Class","derep",1841305,0.000798889917748553
+"Diplopoda",1326,"Class","derep",1841305,0.000720141421437513
+"Chilopoda",995,"Class","derep",1841305,0.000540377612617138
+"Pycnogonida",741,"Class","derep",1841305,0.000402431970803316
+"Protura",140,"Class","derep",1841305,7.60330309210044e-05
+"Ichthyostraca",82,"Class","derep",1841305,4.45336323965883e-05
+"Pauropoda",40,"Class","derep",1841305,2.1723723120287e-05
+"Merostomata",38,"Class","derep",1841305,2.06375369642726e-05
+"Remipedia",32,"Class","derep",1841305,1.73789784962296e-05
+"Symphyla",15,"Class","derep",1841305,8.14639617010761e-06
+"Cephalocarida",5,"Class","derep",1841305,2.71546539003587e-06
+"Diptera",740201,"Order","derep",1840258,0.402226752987896
+"Lepidoptera",349346,"Order","derep",1840258,0.189835338305824
+"Hymenoptera",251783,"Order","derep",1840258,0.136819402496824
+"Coleoptera",120546,"Order","derep",1840258,0.0655049455022068
+"Hemiptera",87280,"Order","derep",1840258,0.0474281323597017
+"Araneae",52344,"Order","derep",1840258,0.0284438377662263
+"Entomobryomorpha",26682,"Order","derep",1840258,0.0144990539370023
+"Decapoda",22907,"Order","derep",1840258,0.0124477111361559
+"Trombidiformes",21197,"Order","derep",1840258,0.0115184936025275
+"Sarcoptiformes",19275,"Order","derep",1840258,0.0104740748308118
+"Trichoptera",12916,"Order","derep",1840258,0.00701858109026017
+"Amphipoda",12742,"Order","derep",1840258,0.00692402913069798
+"Ephemeroptera",11417,"Order","derep",1840258,0.00620402139265255
+"Mesostigmata",10614,"Order","derep",1840258,0.0057676695332937
+"Psocodea",10533,"Order","derep",1840258,0.0057236539659113
+"Orthoptera",9564,"Order","derep",1840258,0.00519709736352185
+"Sessilia",7657,"Order","derep",1840258,0.00416082962280289
+"Thysanoptera",7205,"Order","derep",1840258,0.00391521188876777
+"Odonata",6375,"Order","derep",1840258,0.00346418817361479
+"Plecoptera",6349,"Order","derep",1840258,0.0034500597198871
+"others",53325,"Order","derep",1840258,0.0289769151934131
+"Chironomidae",165132,"Family","derep",1836852,0.0898994584212555
+"Cecidomyiidae",127906,"Family","derep",1836852,0.0696332638666588
+"Sciaridae",74401,"Family","derep",1836852,0.0405046242157779
+"Geometridae",62615,"Family","derep",1836852,0.0340882117884293
+"Phoridae",57367,"Family","derep",1836852,0.0312311498150096
+"Ichneumonidae",54779,"Family","derep",1836852,0.029822217576593
+"Erebidae",43589,"Family","derep",1836852,0.0237302733154331
+"Formicidae",43234,"Family","derep",1836852,0.0235370078808745
+"Cicadellidae",34475,"Family","derep",1836852,0.0187685235391855
+"Ceratopogonidae",30944,"Family","derep",1836852,0.0168462129774201
+"Platygastridae",28804,"Family","derep",1836852,0.0156811762733198
+"Mycetophilidae",26147,"Family","derep",1836852,0.0142346797673411
+"Crambidae",23353,"Family","derep",1836852,0.012713599135913
+"Nymphalidae",23196,"Family","derep",1836852,0.0126281268169673
+"Muscidae",22403,"Family","derep",1836852,0.0121964099448404
+"Tortricidae",20860,"Family","derep",1836852,0.0113563858166036
+"Entomobryidae",20776,"Family","derep",1836852,0.0113106554039193
+"Dolichopodidae",20270,"Family","derep",1836852,0.0110351841084638
+"Culicidae",19608,"Family","derep",1836852,0.0106747849037375
+"Diapriidae",18770,"Family","derep",1836852,0.010218569596244
+"others",918223,"Family","derep",1836852,0.499889484836013
+"Megaselia",40051,"Genus","derep",1311216,0.030544929287013
+"Limnophyes",13713,"Genus","derep",1311216,0.0104582311381191
+"Chironomus",9036,"Genus","derep",1311216,0.00689131310173152
+"Tanytarsus",8950,"Genus","derep",1311216,0.0068257251284304
+"Entomobrya",8448,"Genus","derep",1311216,0.00644287440055643
+"Cricotopus",8414,"Genus","derep",1311216,0.00641694427157692
+"Corynoptera",8388,"Genus","derep",1311216,0.00639711534941611
+"Psychoda",7529,"Genus","derep",1311216,0.00574199826725726
+"Smittia",7368,"Genus","derep",1311216,0.00561921148003075
+"Bradysia",7297,"Genus","derep",1311216,0.00556506326951471
+"Telenomus",7222,"Genus","derep",1311216,0.00550786445558932
+"Aedes",7139,"Genus","derep",1311216,0.00544456443484521
+"Simulium",6642,"Genus","derep",1311216,0.00506552696123293
+"Forcipomyia",6042,"Genus","derep",1311216,0.00460793644982978
+"Empoasca",5325,"Genus","derep",1311216,0.00406111578870301
+"Orthocladius",5183,"Genus","derep",1311216,0.00395281936767093
+"Gymnometriocnemus",4892,"Genus","derep",1311216,0.00373088796964039
+"Culicoides",4733,"Genus","derep",1311216,0.00360962648411856
+"Coleophora",4712,"Genus","derep",1311216,0.00359361081621945
+"Dolichopus",4589,"Genus","derep",1311216,0.0034998047613818
+"others",1135543,"Genus","derep",1311216,0.866022836817122
+"Entomobrya nivalis",3360,"Species","derep",946309,0.00355063726541753
+"Tanytarsus mendax",2191,"Species","derep",946309,0.00231531138349102
+"Paraphaenocladius impensus",2152,"Species","derep",946309,0.00227409862951742
+"Paratanytarsus laccophilus",2023,"Species","derep",946309,0.00213777952022014
+"Balanus glandula",1840,"Species","derep",946309,0.00194439659772865
+"Scathophaga furcata",1732,"Species","derep",946309,0.00183026897134023
+"Scatopsciara atomaria",1711,"Species","derep",946309,0.00180807748843137
+"Corynoptera trepida",1562,"Species","derep",946309,0.0016506236335066
+"Entomobrya atrocincta",1493,"Species","derep",946309,0.00157770876109178
+"Megaselia pulicaria complex",1399,"Species","derep",946309,0.0014783754566426
+"Limnophyes sp. 14ES",1390,"Species","derep",946309,0.00146886482111023
+"Ablabesmyia americana",1389,"Species","derep",946309,0.00146780808382886
+"Aedes vexans",1387,"Species","derep",946309,0.00146569460926611
+"Lycoriella flavipeda",1270,"Species","derep",946309,0.00134205634734532
+"Plutella xylostella",1268,"Species","derep",946309,0.00133994287278257
+"Gymnometriocnemus brumalis",1249,"Species","derep",946309,0.00131986486443646
+"Smittia sp. ES12",1222,"Species","derep",946309,0.00129133295783935
+"Pseudolycoriella brunnea",1188,"Species","derep",946309,0.00125540389027263
+"Entomobrya assuta",1125,"Species","derep",946309,0.00118882944154605
+"Boletina dissipata",1089,"Species","derep",946309,0.00115078689941658
+"others",914269,"Species","derep",946309,0.966142137504769
