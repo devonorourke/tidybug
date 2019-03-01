@@ -105,8 +105,8 @@ The remaining sequenceID records for each clustered fasta were obtained from eac
 
 ```
 cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' | gzip --best > clust99.names.txt.gz
-cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' | gzip --best > clust97.names.txt.gz
-cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' | gzip --best > clust95.names.txt.gz
+cat boldCOI.clust97.fasta | grep "^>" | sed 's/>//' | gzip --best > clust97.names.txt.gz
+cat boldCOI.clust95.fasta | grep "^>" | sed 's/>//' | gzip --best > clust95.names.txt.gz
 ```
 
 Taxonomic info for each record in the `clust*.gz` files were subset from the `boldCOI.derep.txt.gz` file.

@@ -180,3 +180,10 @@ qiime tools import \
   --input-path boldCOI.derep.txt \
   --output-path boldCOI.derep.tax.qza
 ```
+
+Note that following import into QIIME2, the `boldCOI.derep.txt` file was further processed for additional use in other R scripts:
+```
+zcat boldCOI.derep.txt.gz | cut -f 1 > tmp1
+zcat boldCOI.derep.txt.gz | cut -f 2- | cut -d ';' -f 3- > tmp2
+paste tmp1 tmp2 -d ';' | gzip --best > boldCOI.derep.txt.gz
+```
