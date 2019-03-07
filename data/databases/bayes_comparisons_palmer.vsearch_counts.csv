@@ -1,0 +1,4 @@
+pidGrouper,GDL,GS,GSL,SS,US
+algined >= 97% id in Vsearch,1,7572,490,73,37
+algined < 97% id in Vsearch,NA,347,3,1983,902
+not aligned in Vsearch,NA,90,2,189,1718
