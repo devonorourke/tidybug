@@ -1,4 +1,5 @@
-pidGrouper,GDL,GS,GSL,SS,US
-algined >= 97% id in Vsearch,1,7572,490,73,37
-algined < 97% id in Vsearch,NA,347,3,1983,902
-not aligned in Vsearch,NA,90,2,189,1718
+AlignType,GDL,GS,GSL,SS,US
+p97c94,1,7572,490,73,37
+p97c10,NA,333,5,1490,897
+p90c10,NA,103,NA,585,973
+notAligned,NA,1,NA,97,750

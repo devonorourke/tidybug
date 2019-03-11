@@ -1,0 +1,9 @@
+AlignType,Uchime_value,GDL,GS,GSL,SS,US
+p97c94,chimera_detected,NA,363,17,7,1
+p97c94,no_chimera_detected,1,7209,473,66,36
+p97c10,chimera_detected,NA,83,NA,331,157
+p97c10,no_chimera_detected,NA,250,5,1159,740
+p90c10,chimera_detected,NA,2,NA,78,41
+p90c10,no_chimera_detected,NA,101,NA,507,932
+notAligned,chimera_detected,NA,NA,NA,22,32
+notAligned,no_chimera_detected,NA,1,NA,75,718
