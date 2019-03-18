@@ -33,13 +33,12 @@ LibSums$JoindReads <- as.numeric(LibSums$JoindReads)
 LibSums <- LibSums %>% mutate(ReadsRetained = TrimSum/JoindReads)
 LibSums$Method <- factor(LibSums$Method,levels = c("vsearch", "dada2", "deblur"))
 
-## plot; exported at 750x300; save as '2_figure_librarySizesByFilterMethod.png'
+## plot; exported at 750x400; save as '2_figure_librarySizesByFilterMethod'
 ggplot(data = LibSums, aes(x = ReadsRetained, y = Method, label=Library)) + 
   geom_text_repel(vjust=1, nudge_y = 0.2, segment.alpha = 0.2) +
   geom_point() +
-  #geom_point(aes(shape=Library), size=4, alpha=1) +
   scale_shape_manual(values=c(65,66,67,68)) +
-  #scale_shape_manual(values=c(0,1,2,5)) +
+  scale_x_continuous(limits = c(0.6, 1.0)) +
   geom_line(aes(group = Method), color="gray50") +
   labs(title="", y="", x="fraction of retained sequences") +
   theme_devon()

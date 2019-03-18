@@ -1,6 +1,7 @@
 library(tidyverse)
 library(scales)
 library(ggpubr)
+library(viridis)
 
 # theme function for custom plot style:
 theme_devon <- function () { 
@@ -96,7 +97,6 @@ missfunction <- function(data,dataset) {
 palmer_taxa <- read_csv(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/palmer.taxa.txt.gz", col_names = FALSE)
 colnames(palmer_taxa) <- c("class_name", "order_name", "family_name", "genus_name", "species_name")
 palmer_taxa <- as.data.frame(apply(palmer_taxa, 2, function(y) (gsub(".:", "", y))))  ## remove prefixes for each taxa (ex. 'p:', or 'c:', etc.)
-
 ## apply three function
 palmer_uniq <- uniqfunction(palmer_taxa, "Palmer")
 palmer_abund <- uniqCountfunction(palmer_taxa, "Palmer")
@@ -105,9 +105,10 @@ rm(palmer_taxa)
 
 ## ----  porter data:  ----  ##
 ## porter data:
-porter_taxa <- read_csv(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/porter.derep.taxa.txt.gz", col_names = FALSE)
-colnames(porter_taxa) <- c("class_name", "order_name", "family_name", "genus_name", "species_name")
+porter_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/porter.taxa.txt.gz", col_names = FALSE, delim = ';')
+colnames(porter_taxa) <- c("sequenceID", "class_name", "order_name", "family_name", "genus_name", "species_name")
 porter_taxa <- as.data.frame(apply(porter_taxa, 2, function(y) (gsub("_", " ", y))))    ## replace underscore in species names with spaces to match other database naming conventions
+porter_taxa <- as.data.frame(apply(porter_taxa, 2, function(y) (gsub("Ambiguous taxa", NA, y))))    ## substitute the Ambiguous Taxa designation with NA (it's unknown!)
 porter_uniq <- uniqfunction(porter_taxa, "Porter")
 porter_abund <- uniqCountfunction(porter_taxa, "Porter")
 porter_miss <- missfunction(porter_taxa, "Porter")
@@ -124,9 +125,9 @@ rm(derep_taxa)
 
 ## ----  raw data:  ----  ##
 raw_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/raw.taxa.txt.gz", delim = ";", col_names = TRUE)
-raw_uniq <- uniqfunction(raw_taxa, "raw")
+raw_uniq <- uniqfunction(raw_taxa, "original")
 #notrun: raw_abund <- uniqCountfunction(raw_taxa, "raw")
-raw_miss <- missfunction(raw_taxa, "raw")
+raw_miss <- missfunction(raw_taxa, "original")
 rm(raw_taxa)
 
 ## combine the three sets of data
@@ -144,7 +145,7 @@ pal4 <- c("#8A09A5FF", "#0D0887FF", "#DA5B6AFF", "#FEBA2CFF")
 
    
 ## plot; save as db_2_uniqueness; export at 700x525
-uniq_df$Database <- factor(uniq_df$Database, levels = c("raw", "derep", "Palmer", "Porter"))
+uniq_df$Database <- factor(uniq_df$Database, levels = c("original", "derep", "Palmer", "Porter"))
 uniq_df$Level <- factor(uniq_df$Level, levels = c("Class", "Order", "Family", "Genus", "Species"))
 ggplot(uniq_df, aes(x=Level, y=nUniq, group=Database, color=Database, shape=Database)) +
   geom_point() +
@@ -152,27 +153,27 @@ ggplot(uniq_df, aes(x=Level, y=nUniq, group=Database, color=Database, shape=Data
   scale_y_continuous(labels = comma) +
   scale_color_manual(values = pal4) +
   geom_line() +
-  labs(x="", y="Distinct taxa", title="") +
+  labs(x="", y="distinct taxa", title="") +
   theme_devon()
 
-## plot; save as db_3_missingness; export at 1000x600
+## plot; save as db_3_missingness; export at 800x600
 alt_miss_df <- miss_df %>% gather(key = Type, value = nTaxa, Present, Missing)
 alt_miss_df$Level <- factor(alt_miss_df$Level, levels = c("Class", "Order", "Family", "Genus", "Species"))
-alt_miss_df$Database <- factor(alt_miss_df$Database, levels = c("raw", "derep", "Palmer", "Porter"))
+alt_miss_df$Database <- factor(alt_miss_df$Database, levels = c("original", "derep", "Palmer", "Porter"))
 alt_miss_df$Type <- factor(alt_miss_df$Type, levels = c("Missing", "Present"))
 ggplot(alt_miss_df, aes(y=nTaxa, fill=Type, x=Level)) +
   geom_bar(stat="identity", color="gray30") +
   scale_y_continuous(labels = comma) +
   scale_fill_manual(values = c("gray85", "gray45")) +
   facet_wrap(Database ~ ., nrow = 4) +
-  labs(x="", y="distinct taxa", title="", fill="Taxa information") +
+  labs(x="", y="distinct sequences", title="", fill="Taxa information") +
   theme_devon() +
   coord_flip() +
   theme(legend.position = "top",
         axis.text.x = element_text(angle=22.5, hjust=1))
 
 ## plot; save as db_3b_completeness; export at 600x475
-miss_df$Database <- factor(miss_df$Database, levels = c("raw", "derep", "Palmer", "Porter"))
+miss_df$Database <- factor(miss_df$Database, levels = c("original", "derep", "Palmer", "Porter"))
 miss_df$Level <- factor(miss_df$Level, levels = c("Class", "Order", "Family", "Genus", "Species"))
 ggplot(miss_df, aes(x=Level, y=pPresent, group=Database, color=Database, shape=Database)) +
   geom_point(size = 3, stroke=1.2) +

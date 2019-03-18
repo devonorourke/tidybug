@@ -23,38 +23,20 @@ library(stringi)
 ###############################################################################################
 
 ## convert .qza to matrix, then convert wide-format matrix to long-format data.frame object
-## first for dada2
-featuretable <- read_qza("dada2.arthtable.qza")
-mat.tmp <- featuretable$data
-rm(featuretable)
-df.tmp <- as.data.frame(mat.tmp)
-rm(mat.tmp)
-df.tmp$OTUid <- rownames(df.tmp)
-rownames(df.tmp) <- NULL
-dada2.tmp <- melt(df.tmp, id = "OTUid") %>% filter(value != 0) %>% mutate(Method = "dada2")
-rm(df.tmp)
+tableimport.function <- function(table, method){
+  featuretable <- read_qza(table)
+  mat.tmp <- featuretable$data
+  rm(featuretable)
+  df.tmp <- as.data.frame(mat.tmp)
+  rm(mat.tmp)
+  df.tmp$OTUid <- rownames(df.tmp)
+  rownames(df.tmp) <- NULL
+  tmp <- melt(df.tmp, id = "OTUid") %>% filter(value != 0) %>% mutate(Method = method)
+}
 
-## repeat for deblur
-featuretable <- read_qza("deblur.arthtable.qza")
-mat.tmp <- featuretable$data
-rm(featuretable)
-df.tmp <- as.data.frame(mat.tmp)
-rm(mat.tmp)
-df.tmp$OTUid <- rownames(df.tmp)
-rownames(df.tmp) <- NULL
-deblur.tmp <- melt(df.tmp, id = "OTUid") %>% filter(value != 0) %>% mutate(Method = "deblur")
-rm(df.tmp)
-
-## repeat for vsearch (this takes a while longer - it's a much bigger matrix...)
-featuretable <- read_qza("vsearch.arthtable.qza")
-mat.tmp <- featuretable$data
-rm(featuretable)
-df.tmp <- as.data.frame(mat.tmp)
-rm(mat.tmp)
-df.tmp$OTUid <- rownames(df.tmp)
-rownames(df.tmp) <- NULL
-vsearch.tmp <- melt(df.tmp, id = "OTUid") %>% filter(value != 0) %>% mutate(Method = "vsearch")
-rm(df.tmp)
+dada2.tmp <- tableimport.function("dada2.arthtable.qza", "dada2")
+deblur.tmp <- tableimport.function("deblur.arthtable.qza", "deblur")
+vsearch.tmp <- tableimport.function("vsearch.arthtable.qza", "vsearch")
 
 ## combine data
 df <- rbind(dada2.tmp, deblur.tmp, vsearch.tmp)
@@ -90,45 +72,23 @@ rm(df_std_ReadCounts, df_std_HashCounts)
 ###############################################################################################
 
 ## import the "exact", "partial", and "miss" strings, per pipeline
-## for dada2
-da.exact <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/dada2.exactseqs.txt', col_names = FALSE)
-colnames(da.exact) <- "HashID"
-da.exact$MockAlign <- "exact"
-da.exact$Method <- "dada2"
-da.partial <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/dada2.partialseqs.txt', col_names = FALSE)
-colnames(da.partial) <- "HashID"
-da.partial$MockAlign <- "partial"
-da.partial$Method <- "dada2"
-da.miss <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/dada2.missseqs.txt', col_names = FALSE)
-colnames(da.miss) <- "HashID"
-da.miss$MockAlign <- "miss"
-da.miss$Method <- "dada2"
-## for deblur
-db.exact <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/deblur.exactseqs.txt', col_names = FALSE)
-colnames(db.exact) <- "HashID"
-db.exact$MockAlign <- "exact"
-db.exact$Method <- "deblur"
-db.partial <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/deblur.partialseqs.txt', col_names = FALSE)
-colnames(db.partial) <- "HashID"
-db.partial$MockAlign <- "partial"
-db.partial$Method <- "deblur"
-db.miss <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/deblur.missseqs.txt', col_names = FALSE)
-colnames(db.miss) <- "HashID"
-db.miss$MockAlign <- "miss"
-db.miss$Method <- "deblur"
-## for vsearch
-vs.exact <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/vsearch.exactseqs.txt', col_names = FALSE)
-colnames(vs.exact) <- "HashID"
-vs.exact$MockAlign <- "exact"
-vs.exact$Method <- "vsearch"
-vs.partial <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/vsearch.partialseqs.txt', col_names = FALSE)
-colnames(vs.partial) <- "HashID"
-vs.partial$MockAlign <- "partial"
-vs.partial$Method <- "vsearch"
-vs.miss <- read_csv('https://github.com/devonorourke/tidybug/raw/master/data/qiime/vsearch.missseqs.txt', col_names = FALSE)
-colnames(vs.miss) <- "HashID"
-vs.miss$MockAlign <- "miss"
-vs.miss$Method <- "vsearch"
+mockimport.function <- function(urlpath, col2name, col3name){
+  tmpfile <- read_csv(urlpath, col_names = FALSE)
+  colnames(tmpfile) <- "HashID"
+  tmpfile$MockAlign <- col2name
+  tmpfile$Method <- col3name
+  tmpfile
+}
+
+da.exact <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/dada2.exactseqs.txt', "exact", "dada2")
+da.partial <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/dada2.partialseqs.txt', "partial", "dada2")
+da.miss <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/dada2.missseqs.txt', "miss", "dada2")
+db.exact <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/deblur.exactseqs.txt', "exact", "deblur")
+db.partial <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/deblur.partialseqs.txt', "partial", "deblur")
+db.miss <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/deblur.missseqs.txt', "miss", "deblur")
+vs.exact <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/vsearch.exactseqs.txt', "exact", "vsearch")
+vs.partial <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/vsearch.partialseqs.txt', "partial", "vsearch")
+vs.miss <- mockimport.function('https://github.com/devonorourke/tidybug/raw/master/data/qiime/vsearch.missseqs.txt', "miss", "vsearch")
 
 ## combine datasets
 all.mockalign <- rbind(da.exact, da.partial, da.miss, db.exact, db.partial, db.miss, vs.exact, vs.partial, vs.miss)

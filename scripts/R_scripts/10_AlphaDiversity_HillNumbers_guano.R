@@ -143,16 +143,15 @@ q0 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=0"),
   scale_color_manual(values = pal6) +
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
-  scale_y_continuous(limits = c(0,400)) +
+  scale_y_continuous(limits = c(0,250)) +
   facet_grid( ~ Labeler) +
-  #labs(title = "", x="", y="sequence variants", color="", shape="", caption = "13 outliers with > 400 sequence variants (all Vsearch) not shown") +
   labs(title = "", x="", y="sequence variants", color="", shape="") +
   theme_devon() + theme(legend.position = "top", 
                         axis.text.x = element_blank(),
                         #axis.text.x = element_text(angle = 22.5, hjust=1), 
                         axis.ticks.x = element_blank(),
                         axis.title.y = element_text(size = 10),
-                        plot.margin = margin(c(0,1.2,0,0), unit = "cm")) +
+                        plot.margin = margin(c(0,0.5,0,1), unit = "cm")) +
   guides(col = guide_legend(nrow = 1))
 
 
@@ -162,14 +161,13 @@ q1 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=1"),
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
   facet_grid( ~ Labeler) +
-  scale_y_continuous(limits = c(0,51)) +
   labs(title = "", x="", y="sequence variant equivalents", color="", shape="") +
   theme_devon() + 
   theme(legend.position = "none", 
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
         axis.title.y = element_text(size = 10),
-        plot.margin = margin(c(0,1.2,0,0), unit = "cm"))
+        plot.margin = margin(c(0,0.5,0,1), unit = "cm"))
 
 
 q2 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=2"),
@@ -178,16 +176,16 @@ q2 <- ggplot(data=all.guano.hill %>% filter(Hill_qType=="q=2"),
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha=0.2, position=position_jitterdodge(jitter.width = 0.3)) +
   facet_grid( ~ Labeler) +
-  scale_y_continuous(limits = c(0,51)) +
-  labs(title = "", x="", y="sequence variant equivalents", color="", shape="") +
+  labs(title = "", x="", y="sequence variant equivalents", color="", shape="",
+       caption = "21 outliers with > 250 sequence variants (all Vsearch) not shown for q=0") +
   theme_devon() + theme(legend.position = "none", 
-                        #axis.text.x = element_blank(),
-                        axis.text.x = element_text(angle = -30, hjust=0, size = 8), 
+                        axis.text.x = element_blank(),
+                        #axis.text.x = element_text(angle = 22.5, hjust=1, size = 8), 
                         axis.ticks.x = element_blank(),
                         axis.title.y = element_text(size = 10),
-                        plot.margin = margin(c(0,1.2,0,0), unit = "cm"))
+                        plot.margin = margin(c(0,0.5,0,1), unit = "cm"))
 
 
-## plot; save as 10_guanoAlpha_HillNumbers; export at 1000x1000
-plot_grid(q0,q1,q2, ncol=1, rel_heights = c(1.2, 1, 1.2))
-
+## plot; save as 10_guanoAlpha_HillNumbers; export at 900x900
+#plot_grid(q0,q1,q2, ncol=1, rel_heights = c(1.3, 0.9, 1.2))
+plot_grid(q0,q1,q2, ncol=1, rel_heights = c(1.2, 1, 1))

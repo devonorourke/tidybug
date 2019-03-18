@@ -18,7 +18,7 @@ df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tab
 mock <- df %>% filter(SampleType == "mock")
 mock$Labeler <- paste(mock$HashID, mock$Method, sep="-")
 rm(df)
-HashFiltLabels <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/HashIDs_withFiltLabels.csv")
+HashFiltLabels <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/HashIDs_withFiltLabels.csv")   ## from '1_sequence_filter.R` script`
 mock <- merge(mock, HashFiltLabels)
 mock$Labeler <- NULL
 rm(HashFiltLabels)

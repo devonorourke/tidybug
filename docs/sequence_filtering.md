@@ -41,7 +41,9 @@ qiime demux summarize \
 ```
 
 ## Denoising
-Three separate pipelines were used for further filtering sequence data. Each process ultimately generates a table of dereplicated sequences (OTUs or ASVs) containing per-sample counts of unique sequence variants. These three processes were Vsearch, Dada2, or Deblur. Dada2 and Deblur incorporate unique error models to identify and act upon proposed sequence mistakes including chimeric sequences, while Vsearch only corrects for chimeric sequences without any error detection on a per-base level. Each process required a separate set of commands; notably, Dada2 and Denoise accept the trimmed unpaired output from Cutadapt, while Vsearch requires reads to be joined prior to beginning it's process.
+Three separate pipelines were used for further filtering sequence data. Each process ultimately generates a table of dereplicated sequences (OTUs or ASVs) containing per-sample counts of unique sequence variants. These three processes were Vsearch, Dada2, or Deblur. Dada2 and Deblur incorporate unique error models to identify and act upon proposed sequence mistakes including chimeric sequences, while Vsearch only corrects for chimeric sequences without any error detection on a per-base level. Each process required a separate set of commands; notably, Dada2 and Denoise accept the trimmed unpaired output from Cutadapt, while Vsearch requires reads to be joined prior to beginning it's process. We changed a few default parameters from the QIIME implementations of Deblur and VSEARCH in attempts to standardize their filtering assumptions:
+- all methods removed per-sample features (ASVs) that contained an abundance of sequence counts < 2 (discarded singleton sequences per sample)
+- all methods retained per-dataset features (ASVs) _including_ singleton ASVs
 
 ### Dada2
 Dada 2 implementation below. See `seqfilter.dada2_example.sh` for example shell script used.
@@ -56,6 +58,8 @@ qiime dada2 denoise-paired \
   --o-denoising-stats "$LIB".denoisingStats.qza
 ```
 
+DADA2 automatically discards singelton seqences, but retains doubletons, tripletons, etc. It also retains singleton ASVs by default in QIIME. Note that chimera filtering completed in DADA2 is done on a per-sample basis rather than by pooling the entire sample; this follows the recommendation of the developer (though the per-pool chimera detection option is available in QIIME).
+
 ### Deblur
 Unliked Dada2, Deblur uses a reference database of known sequences to model the error of the sequence data. The database used for denoising here is the same as described in the `database_workflow.md` document - a set of select arthropod sequences derived from the Barcode of Life Database (BOLD).
 > The `$REF` environmental variable specifies the full path to the QIIME artifact that represents the curated arthropod BOLD database
@@ -66,19 +70,20 @@ qiime deblur denoise-other \
 --i-reference-seqs "$REF" \
 --p-trim-length 181 \
 --p-sample-stats \
+--p-min-reads 2 \
+--p-min-size 1 \
 --p-jobs-to-start 24 \
 --o-table "$LIB".dblr.table.qza \
 --o-representative-sequences "$LIB".dblr.repseqs.qza \
 --o-stats "$LIB".dblr.stats.qza
 ```
 
-> Two default parameters not specified here of interest:
-- `--p-min-size` affects what sequences are considered during the execution of Deblur; the default is **2**, meaning no sample with an ASV of read depth 1 is considered in this analysis
-- `--p-min-reads` filters low abundant sequences after Deblur filtering is executed; the default is **10**, which impacts both the unfiltered ASVs above as well as any remaining _filtered_ reads.
-Thus, the resulting matrix of counts in the feature table has already had 10 reads subtracted from the initial input of read counts.
+Unlike DADA2, Deblur by default discards singleton ASVs, and discards per-sample ASVs with less than 10 reads. We modified these default parameters to match DADA2. The chimera filtering performed in this analysis uses a VSEARCH implementation of Uchime-denovo and is thus independent of a reference library. This requires that chimera filtering is done on a pool of sequences, rather than on a per-sample level.
 
 ### Vsearch
-The parameters chosen in this implementation follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). Within the QIIME installation, Vsearch filtering first required the read pairs to be joined first; we then applied a basic quality filter to the sequences:
+The parameters chosen in this implementation mostly follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). The exception is that their vignette removes singleton features, while we are retaining them; however, we are going to add an additional step in which per-sample ASVs with < 2 reads are discarded to match the DADA2 and Deblur filtering settings.
+
+Within the QIIME installation, Vsearch filtering first required the read pairs to be joined first; we then applied a basic quality filter to the sequences:
 ```
 ## merge paired end data
 ## '--p-allowmergestagger' necessary because of the large overhang with our 300bp seqs and 180bp amplicon
@@ -169,7 +174,7 @@ qiime feature-table merge-seqs \
 ```
 
 ## Amending the Vsearch data
-The combined `vsearch.all.raw.*.qza` files needed to be relabled from their sha1 format to the md5 hash format, as described above. We did this by creating
+The combined `vsearch.all.raw.*.qza` files needed to be relabled from their sha1 format to the md5 hash format, as described above. We did this by creating a test file `vsearch.all.headers.txt` that contained the sha1 and md5 headers in two columns:
 ```
 ## reformat the Vsearch fasta file with md5 hash labels, while retaining the original sha1 hash ID
 qiime tools export --input-path vsearch.all.raw.seqs.qza --output-path vtmpseqs
@@ -226,6 +231,7 @@ qiime tools import \
 ```
 > Note that the `vsearch.all.raw.*.qza` files were overwriting the original files used as input into the whole relabeleing process
 
+We removed host sequences from this table first before removing the remaining singleton sequences.
 
 ## Filtering potential host sequences
 It's possible that following quality filtering the remaining data includes host (bat) COI sequences. Failure to remove these sequences can result in misidentifying the bat COI sequence as some arthropod sequence (because the database that sequences are assigned taxonomy consists exclusively of arthropod information). Because we captured our data within New Hampshire there are a finite list of possible bat hosts. Representative sequences for each bat species were obtained from two Genbank projects:
@@ -268,15 +274,34 @@ These file pairs were used in the `seqfilter.combineNfilter.sh` script to remove
   grep "^>" "$METHOD"_hostseqs/dna-sequences.fasta | sed 's/>//' | sed '1 i\#OTU ID' > "$METHOD".droplist;
 ```
 
-The resulting `"$METHOD".hostseqs.fasta` file was searched with NCBI blast against nr database to determine if putative host hits were mismatches. Nearly all matches regardless of filtering method returned the same host for putative host-associated sequence variants: the Little Brown bat, _Myotis lucifugus_. There were two exceptions: one sequence variant was matched to the Eastern Small-footed bat, _Myotis leibii_ in each of the three filtering methods, while the Vsearch filtering strategy matched a sequence variant to the Evening bat, _Nycticeius humeralis_ (this variant was not present in either the DADA2 or Deblur pipeline).
+The resulting `"$METHOD".hostseqs.fasta` file was searched with NCBI blast against nr database to determine if putative host hits were mismatches. Nearly all matches regardless of filtering method returned the same host for putative host-associated sequence variants: the Little Brown bat, _Myotis lucifugus_. There were two exceptions: one sequence variant was matched to the Eastern Small-footed bat, _Myotis leibii_ in each of the three filtering methods, while the Vsearch and DADA2 filtering strategies matched a sequence variant to the Evening bat, _Nycticeius humeralis_ (this variant was not present in the DADA2-filtered output).
 
 The `*.droplist` file is then used to exlcude the ASVs we suspect are derived from bat hosts; any further sequence variants are assumed to be derived from arthropod (or otherwise will remain unclassified):
 ```
-  qiime feature-table filter-features \
+qiime feature-table filter-features \
   --i-table "$METHOD".all.raw.table.qza \
   --m-metadata-file "$METHOD".droplist \
   --o-filtered-table "$METHOD".arthtable.qza \
   --p-exclude-ids
+```
+
+For VSEARCH specifically, the `vsearch.arthtable.qza` file is filtered to removed singleton sequences per sample:
+```
+qiime feature-table filter-features \
+--i-table vsearch.arthtable.qza \
+--p-min-frequency 2 \
+--o-filtered-table vsearch.arthtable_nosingles.qza
+
+mv vsearch.arthtable_nosingles.qza vsearch.arthtable.qza
+```
+
+We also then update the sequences based on this reduced table (which contains fewer ASVs):
+```
+qiime feature-table filter-seqs \
+--i-data vsearch.arthseqs.qza \
+--i-table vsearch.arthtable.qza \
+--o-filtered-data vsearch.arthseqs-filtd.qza
+mv vsearch.arthseqs-filtd.qza vsearch.arthseqs.qza
 ```
 
 The `*.arthtable.qza` files produced represent our "basic" host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). These artifacts serve as the input for potentially additional sample and sequence variant-based filtering described next. Files were uploaded to the Github repo (/tidybug/data/qiime/tables).
@@ -365,4 +390,4 @@ grep "^>" ./miss_seqs/dna-sequences.fasta | sed 's/>//' > dada2.missseqs.txt
 These `*.txt` files are imported into the custom R script `sequence_filtering.R` to determine what the maximum value is per Library, per pipeline. Each Library of full guano data (or mock data) is then filtered according to that value.
 
 # Additional notes
-The output of this script and the additional `sequence_filtering.R` script generates all of the needed data structures for the section of the manuscript concerning filtering pipelines and parameters. An additional `diversity_script.R` provides the information required to generate the datasets for figures concerning alpha and beta diversity metrics. See the `database_filtering.md` document for details of bioinformatic processes used in the database-related section of the manscript. Additional R scripts are generated for each figure as needed; each figure has it's own R script for clarity.
+The output of this script and the additional `sequence_filtering.R` script generates all of the needed data structures for the section of the manuscript concerning filtering pipelines and parameters. Additional R scripts were applied to generate the datasets and figures concerning alpha and beta diversity metrics. See the `database_filtering.md` document for details of bioinformatic processes used in the database-related section of the manscript. Additional R scripts are generated for each figure as needed; each figure has it's own R script for clarity.

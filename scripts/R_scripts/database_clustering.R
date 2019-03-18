@@ -43,29 +43,36 @@ missfunction <- function(data,dataset) {
   tmp
 }
 
+
 ## import data:
 derep_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/boldCOI.derep.txt.gz", delim = ";", col_names = FALSE)
 colnames(derep_taxa) <- c("SeqID", "class_name", "order_name", "family_name", "genus_name", "species_name")
-#notrun: derep_taxa <- as.data.frame(apply(derep_taxa, 2, function(y) (gsub("Ambiguous_taxa", NA, y))))
-clust99_names <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust99.names.txt.gz", delim = ";", col_names = FALSE)
-colnames(clust99_names) <- "SeqID"
-clust97_names <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust97.names.txt.gz", delim = ";", col_names = FALSE)
-colnames(clust97_names) <- "SeqID"
-clust95_names <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust95.names.txt.gz", delim = ";", col_names = FALSE)
-colnames(clust95_names) <- "SeqID"
+
+clust99_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust99.names.txt.gz", delim = ";", col_names = FALSE)
+colnames(clust99_taxa) <- c("SeqID", "kingdom_name", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
+clust99_taxa <- clust99_taxa %>% select(-kingdom_name, -phylum_name)
+
+clust97_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust97.names.txt.gz", delim = ";", col_names = FALSE)
+colnames(clust97_taxa) <- c("SeqID", "kingdom_name", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
+clust97_taxa <- clust97_taxa %>% select(-kingdom_name, -phylum_name)
+
+clust95_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust95.names.txt.gz", delim = ";", col_names = FALSE)
+colnames(clust95_taxa) <- c("SeqID", "kingdom_name", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
+clust95_taxa <- clust95_taxa %>% select(-kingdom_name, -phylum_name)
 
 ## generate missingness per level
 derep_miss <- missfunction(derep_taxa, "derep")
-clust99_miss <- missfunction(derep_taxa %>% filter(SeqID %in% clust99_names$SeqID), "clust99")
-clust97_miss <- missfunction(derep_taxa %>% filter(SeqID %in% clust97_names$SeqID), "clust97")
-clust95_miss <- missfunction(derep_taxa %>% filter(SeqID %in% clust95_names$SeqID), "clust95")
+clust99_miss <- missfunction(clust99_taxa, "clust 99%")
+clust97_miss <- missfunction(clust97_taxa, "clust 97%")
+clust95_miss <- missfunction(clust95_taxa, "clust 95%")
 
-rm(clust95_names, clust97_names, clust99_names, derep_taxa)
+rm(clust99_taxa, clust97_taxa, clust95_taxa)
 all_miss <- rbind(derep_miss, clust99_miss, clust97_miss, clust95_miss)
+#rm(derep_miss, clust99_miss, clust97_miss, clust95_miss)
 
 ## levels for plot
 all_miss$Level <- factor(all_miss$Level, levels = c("Class", "Order", "Family", "Genus", "Species"))
-all_miss$Database <- factor(all_miss$Database, levels = c("derep", "clust99", "clust97", "clust95"))
+all_miss$Database <- factor(all_miss$Database, levels = c("derep", "clust 99%", "clust 97%", "clust 95%"))
 
 ## plot - total number of records; save as db5_clustRecords; export at 800x600
 alt_miss <- all_miss %>% select(Level, Database, Present, Missing, ambiguous) %>% gather(key = InfoType, value = Value, Present, Missing, ambiguous)
@@ -73,8 +80,8 @@ alt_miss$InfoType <- gsub("ambiguous", "Ambiguous", alt_miss$InfoType)
 alt_miss$InfoType <- gsub("ambiguous", "Ambiguous", alt_miss$InfoType)
 alt_miss$Labeler <- paste(alt_miss$Database, alt_miss$InfoType, sep=" - ")
 alt_miss$Labeler <- factor(alt_miss$Labeler, levels = c(
-  "derep - Present", "derep - Missing", "derep - Ambiguous","clust99 - Present", "clust99 - Missing", "clust99 - Ambiguous",
-  "clust97 - Present", "clust97 - Missing", "clust97 - Ambiguous","clust95 - Present", "clust95 - Missing", "clust95 - Ambiguous"))
+  "derep - Present", "derep - Missing", "derep - Ambiguous","clust 99% - Present", "clust 99% - Missing", "clust 99% - Ambiguous",
+  "clust 97% - Present", "clust 97% - Missing", "clust 97% - Ambiguous","clust 95% - Present", "clust 95% - Missing", "clust 95% - Ambiguous"))
 
 pal12 <- c(rep('#ca0020',3), rep('#f4a582',3), rep('#92c5de',3), rep('#0571b0', 3))
 shape12 <- rep(c(16, 17, 15),4)
@@ -93,15 +100,102 @@ ggplot(alt_miss, aes(x=Level, y=Value, color=Labeler, group=Labeler, shape=Label
   guides(fill=guide_legend(ncol=3))
 
 ## plot - fraction of information by clustering; save as db5b_clustFractions; export at 800x600
-alt_miss2 <- all_miss %>% select(Level, Database, pPresent, pMissing, pAmbiguous) %>% gather(key = InfoType, value = Value, pPresent, pMissing, pAmbiguous)
+alt_miss2 <- all_miss %>% select(Level, Database, pPresent, pMissing, pAmbiguous) %>% 
+  gather(key = InfoType, value = Value, pPresent, pMissing, pAmbiguous)
+
+alt_miss2$InfoType <- factor(alt_miss2$InfoType, levels = c("pPresent", "pMissing", "pAmbiguous"))
 
 ggplot(alt_miss2, aes(x=Level, y=Value, group=Database, fill=InfoType)) +  
-  geom_bar(stat="identity", position="dodge") +
+  geom_bar(stat="identity") +
   facet_wrap(~ Database, nrow = 4) +
   coord_flip() +
-  scale_fill_manual(values=c("gray20", "gray50", "gray80"),
-                    labels=c("Ambigous", "Missing", "Present"),
-                    breaks=c("pAmbiguous", "pMissing", "pPresent")) +
+  scale_fill_manual(values=c("gray80", "gray20", "gray50"),
+                    labels=c("Present", "Missing", "Ambiguous"),
+                    breaks=c("pPresent", "pMissing", "pAmbiguous")) +
   labs(x="", y="fraction of sequences", fill="Taxa Information") +
   theme_devon() +
   theme(legend.position = "top", legend.text = )
+
+
+### Examining how clustering impacts the proportion of information for specific arthropod Orders:
+# 1) What are the most frequently observed arthropod Orders in our dereplicated dataset?
+derep.topArthOrders <- derep_taxa %>% group_by(order_name) %>% summarise(OrderCounts=n()) %>% arrange(-OrderCounts)
+## we're going to select the top 6 Orders, ad well as 3 others in that list we see in our bat samples a lot:
+SelectOrders <- c("Diptera", "Lepidoptera", "Hymenoptera", "Coleoptera", "Hemiptera", "Araneae", "Trichoptera", "Psocodea", "Ephemeroptera")
+
+## import data again, but this time convert any 'Ambiguous_name' value to NA
+## import data:
+derep_taxa2 <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/boldCOI.derep.txt.gz", delim = ";", col_names = FALSE)
+colnames(derep_taxa2) <- c("SeqID", "class_name", "order_name", "family_name", "genus_name", "species_name")
+derep_taxa2 <- as.data.frame(apply(derep_taxa2, 2, function(y) (gsub("Ambiguous_taxa", NA, y))))
+
+clust99_taxa2 <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust99.names.txt.gz", delim = ";", col_names = FALSE)
+colnames(clust99_taxa2) <- c("SeqID", "kingdom_name", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
+clust99_taxa2 <- clust99_taxa2 %>% select(-kingdom_name, -phylum_name)
+clust99_taxa2 <- as.data.frame(apply(clust99_taxa2, 2, function(y) (gsub("Ambiguous_taxa", NA, y))))
+
+clust97_taxa2 <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust97.names.txt.gz", delim = ";", col_names = FALSE)
+colnames(clust97_taxa2) <- c("SeqID", "kingdom_name", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
+clust97_taxa2 <- clust97_taxa2 %>% select(-kingdom_name, -phylum_name)
+clust97_taxa2 <- as.data.frame(apply(clust97_taxa2, 2, function(y) (gsub("Ambiguous_taxa", NA, y))))
+
+clust95_taxa2 <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/clust95.names.txt.gz", delim = ";", col_names = FALSE)
+colnames(clust95_taxa2) <- c("SeqID", "kingdom_name", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
+clust95_taxa2 <- clust95_taxa2 %>% select(-kingdom_name, -phylum_name)
+clust95_taxa2 <- as.data.frame(apply(clust95_taxa2, 2, function(y) (gsub("Ambiguous_taxa", NA, y))))
+
+## function to calculate proportion of information retained at Order, Family, Genus, and Species level depending on clustering %
+taxOrderComp.function <- function(data, pid) {
+  tmp1<- data %>% filter(order_name %in% SelectOrders) %>% 
+    filter(!is.na(class_name)) %>% filter(!is.na(order_name)) %>% filter(!is.na(family_name)) %>% filter(!is.na(genus_name)) %>% filter(!is.na(species_name)) %>%
+    group_by(order_name) %>% summarise(nRecords = n()) %>% mutate(Rank = "Complete information")
+  tmp2 <- data %>% filter(order_name %in% SelectOrders) %>% 
+    filter(!is.na(class_name)) %>% filter(!is.na(order_name)) %>% filter(!is.na(family_name)) %>% filter(!is.na(genus_name)) %>% filter(is.na(species_name)) %>%
+    group_by(order_name) %>% summarise(nRecords = n()) %>% mutate(Rank = "Missing species")
+  tmp3 <- data %>% filter(order_name %in% SelectOrders) %>% 
+    filter(!is.na(class_name)) %>% filter(!is.na(order_name)) %>% filter(!is.na(family_name)) %>% filter(is.na(genus_name)) %>% filter(is.na(species_name)) %>%
+    group_by(order_name) %>% summarise(nRecords = n()) %>% mutate(Rank = "Missing genus and species")
+  tmp4 <- data %>% filter(order_name %in% SelectOrders) %>% 
+    filter(!is.na(class_name)) %>% filter(!is.na(order_name)) %>% filter(is.na(family_name)) %>% filter(is.na(genus_name)) %>% filter(is.na(species_name)) %>%
+    group_by(order_name) %>% summarise(nRecords = n()) %>% mutate(Rank = "Order information only")
+  tmp <- rbind(tmp1, tmp2, tmp3, tmp4) %>% mutate(Cluster=pid)
+  Totals <- data %>% filter(order_name %in% SelectOrders) %>% group_by(order_name) %>% summarise(nTotal=n())
+  out <- merge(tmp, Totals) %>% mutate(pRecords=nRecords/nTotal)
+  out
+}
+
+derep.selectOrder_df <- taxOrderComp.function(derep_taxa2, "derep")
+clust99.selectOrder_df <- taxOrderComp.function(clust99_taxa2, "clust 99%")
+clust97.selectOrder_df <- taxOrderComp.function(clust97_taxa2, "clust 97%")
+clust95.selectOrder_df <- taxOrderComp.function(clust95_taxa2, "clust 95%")
+
+all.selectOrder_df <- rbind(derep.selectOrder_df, clust99.selectOrder_df, clust97.selectOrder_df, clust95.selectOrder_df)
+#rm(derep.selectOrder_df, clust99.selectOrder_df, clust97.selectOrder_df, clust95.selectOrder_df)
+
+## plot
+pal4 <- c("#d7191c", '#fdae61', '#abd9e9', '#2c7bb6')
+all.selectOrder_df$Rank <- factor(all.selectOrder_df$Rank, levels=c("Complete information", "Missing species", "Missing genus and species", "Order information only"))
+all.selectOrder_df$Cluster <- factor(all.selectOrder_df$Cluster, levels = c("derep", "clust 99%", "clust 97%", "clust 95%"))
+
+## plotting counts of records first
+## save as db_13a_clusteringTopOrders_counts; export at 1000x800
+ggplot(all.selectOrder_df, 
+       aes(y=nRecords, x=reorder(order_name, -nRecords), fill=Rank)) + 
+  geom_bar(stat="identity") + 
+  scale_fill_manual(values=pal4) +
+  facet_grid(Cluster ~ ., scales = "free") +
+  #coord_flip() +
+  scale_y_continuous(labels = comma) +
+  theme_devon() + theme(legend.position="top") +
+  labs(x="", y="number of sequence records", fill="Record\ninformation")
+
+## plotting percentage of records second
+## save as db_13b_clusteringTopOrders_percent; export at 
+ggplot(all.selectOrder_df, 
+       aes(y=pRecords, x=reorder(order_name, -nRecords), fill=Rank)) + 
+  geom_bar(stat="identity") + 
+  scale_fill_manual(values=pal4) +
+  facet_grid(Cluster ~ .) +
+  #coord_flip() +
+  theme_devon() + theme(legend.position="top") +
+  labs(x="", y="fraction of sequence records", fill="Record\ninformation")

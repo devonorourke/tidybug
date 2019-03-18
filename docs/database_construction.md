@@ -105,13 +105,13 @@ rm tmp.left tmp.seqs
 We'll use that `tmp_nolabels.fasta` file as input for the [pick_otus.py](http://qiime.org/scripts/pick_otus.html) script. We switch the conda environments from the ``
 ```
 conda activate dev_qiime1
-pick_otus.py -i tmp_nolabels.fasta -o filt3_otus --similarity 1.0 --threads 24
+pick_otus.py -i tmp_nolabels.fasta -o pid100_otus --similarity 1.0 --threads 24
 ```
-This generates a `tmp_nolabels_otus.txt` text file within a newly created `filt3_otus` directory that is used in the next [create_consensus_taxonomy.py](https://gist.github.com/walterst/bd69a19e75748f79efeb) script to generate the mapping file that will apply the LCA algorithm.
+This generates a `tmp_nolabels_otus.txt` text file within a newly created `pid100_otus` directory that is used in the next [create_consensus_taxonomy.py](https://gist.github.com/walterst/bd69a19e75748f79efeb) script to generate the mapping file that will apply the LCA algorithm.
 
 We next apply three inputs (`tmp_nolabels.taxa`, `tmp_nolabels.fasta`, and `tmp_nolabels_otus.txt`) to generate a consensus mapping file output (`outmap.txt`) for our data:
 ```
-python create_consensus_taxonomy.py tmp_nolabels.taxa tmp_nolabels.fasta ./pikd_otus/tmp_nolabels_otus.txt outmap.txt
+python create_consensus_taxonomy.py tmp_nolabels.taxa tmp_nolabels.fasta ./pid100_otus/tmp_nolabels_otus.txt outmap.txt
 ```
 
 The `outmap.txt`file is a 2-column file with the sequenceID and taxonomy string:
@@ -141,7 +141,7 @@ Writing output file 100%
 We'll use this dataset for one final purpose prior to converting into the appropriate QIIME format- clustering this dereplicated set.
 
 ## Clustering data
-I wanted to understand how clustering databases prior to classification can reduce taxonomic information in a dataset. I suspect the motivation behind this approach is partly due to improving computational speed (fewer sequences means faster searching) while reducing computing hardware (smaller datasets require less memory to compute and less disk space to write to), as well as a biological inclination that clustering sequences with similar sequence identities produces fewer unique sequence variants the resulting dataset can contain. The former argument is certainly important if you want to do this work on a laptop, but not a necessity with the nearly ubiquitous and cheap access to cloud computing resources. The latter argument is just unnecessary - if computing resources are no issue, we shouldn't cluster before hand - we should cluster after the fact if so desired because you can't do the reverse if your database is clustered to begin with.
+I wanted to understand how clustering databases prior to classification can reduce taxonomic information in a dataset. I suspect the motivation behind those using this approach is partly due to improving computational speed (fewer sequences means faster searching) while reducing computing hardware (smaller datasets require less memory to compute and less disk space to write to), as well as a biological inclination that clustering sequences with similar sequence identities produces fewer unique sequence variants the resulting dataset can contain. The former argument is certainly important if you want to do this work on a laptop, but not a necessity with the nearly ubiquitous and cheap access to cloud computing resources. The latter argument is just unnecessary - if computing resources are no issue, we shouldn't cluster before hand - we should cluster after the fact if so desired because you can't do the reverse if your database is clustered to begin with.
 
 We'll cluster at 99%, 97%, and 95%; this command produces three output fasta files, one per cluster %id:
 ```
@@ -152,7 +152,34 @@ vsearch --cluster_size boldCOI.derep.fasta --threads 24 --strand both --fasta_wi
 done
 ```
 
-These clustered `.fasta` records serve as inputs for subsequent analyses described in the `database_analyses.md` document.
+These clustered `.fasta` records serve as inputs for subsequent analyses described in the `database_analyses.md` document. The result of clustering is substantial - even modest clustering at 99% identity drops the number of unique records from **1,841,946** unique sequences to just **407,356** records. The question we sought to understand was how this impacts the composition of the remaining taxonomic diversity.
+
+As with formatting the dereplicated database, we applied an LCA algorithm to all centroids and associated sequences when there were > 1 sequence matches per centroid (the centroid is the representative sequence that serves as the OTU following clustering). Reducing the percent identity will result in fewer representative sequences and a smaller database - this makes classification more computationally efficient, however, it comes at the cost of taxonomic completeness. Lowering the percent identity broadens the number of representative sequences that are similar to each other; as more sequences are grouped into a single OTU group, the likelihood of distinct taxonomic identities within an OTU increases. Applying the LCA algorithm to this process to this group will therefore reduce the taxonomic information available for the average OTU - you gain computational speed, but lose information. We investigated two core questions about this effect: first, what is the overall extent of the amount of uniqueness (information) lost across each taxonomic level as clustering proceeds, and second, are the most abundant taxonomic Orders differentially impacted by clustering, or is the degree of information loss equal across the most abundant groups of representative taxa in the COI database?
+
+We modified the parameters of Python scripts used in dereplicating to apply the LCA algorithm to each clustered dataset:
+```
+## for pid99
+pick_otus.py -i tmp_nolabels.fasta -o pid99_otus --similarity 0.99 --threads 24
+cd pid99_otus
+python ../create_consensus_taxonomy.py ../tmp_nolabels.taxa tmp_nolabels.fasta tmp_nolabels_otus.txt pid99_outmap.txt
+```
+> The same process was repeated for the 97% and 95% clustered datasets
+
+We queried each `boldCOI.clust9*.fasta` file with the corresponding `pid9*_outmap.txt` to match the remaining sequence IDs with the LCA-amended taxonomies; the `clust9*_names.txt.gz` output contains these matches:
+
+```
+cat boldCOI.clust99.fasta | grep "^>" | sed 's/>//' > seqids.tmp
+awk 'FNR==NR {hash[$1]; next} $1 in hash;' seqids.tmp ./pid99_otus/pid99_outmap.txt > match.tmp
+rm seqids.tmp
+cat match.tmp | cut -f 1 > left.tmp
+cat match.tmp | cut -f 2- > right.tmp
+rm match.tmp
+paste -d ';' left.tmp right.tmp | gzip --best > clust99.names.txt.gz
+rm left.tmp right.tmp
+```
+> The same process is repeated for 97% and 95% clustered datasets
+
+Each file (one per cluster radius) is then imported into the `database_clustering.R` script to create the necessary plots.
 
 ## Formatting data for QIIME import
 Two files are required for importing into QIIME2 to perform classification: (1) a taxonomy file, and (2) a fasta file. The taxonomy file uses the same 2 column format as the `outmap.txt` file, except we're only going to retain the records present in the dereplicated dataset. The `boldCOI.derep.fasta` file contains the correct format for import.
@@ -161,10 +188,11 @@ We make a temporary list of all the sequenceID values from the headers of the `b
 ```
 grep '^>' boldCOI.derep.fasta | sed 's/>//' > derep.seqid.tmp
 awk 'FNR==NR {hash[$1]; next} $1 in hash' derep.seqid.tmp outmap.txt > boldCOI.derep.txt
+sed 's/Animalia;/k__Animalia;p__/' boldCOI.derep.txt | sed 's/;/;c__/2' | sed 's/;/;o__/3' | sed 's/;/;f__/4' | sed 's/;/;g__/5' | sed 's/;/;s__/6' > boldCOI.derep.qiime.tmp
 rm derep.seqid.tmp
 ```
 
-The `boldCOI.derep.fasta` and `boldCOI.derep.txt` files are imported into QIIME2:
+The `boldCOI.derep.fasta` and `boldCOI.derep.qiime.tmp` files are imported into QIIME2:
 
 ```
 ## fasta file import
@@ -177,8 +205,11 @@ qiime tools import \
 qiime tools import \
   --type 'FeatureData[Taxonomy]' \
   --input-format HeaderlessTSVTaxonomyFormat \
-  --input-path boldCOI.derep.txt \
+  --input-path boldCOI.derep.qiime.tmp \
   --output-path boldCOI.derep.tax.qza
+
+## remove temporary file:
+rm boldCOI.derep.qiime.tmp
 ```
 
 Note that following import into QIIME2, the `boldCOI.derep.txt` file was further processed for additional use in other R scripts:

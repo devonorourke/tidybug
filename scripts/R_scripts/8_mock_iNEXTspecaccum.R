@@ -67,6 +67,19 @@ theme_devon <- function () {
 mock.inext.q0 <- mock.inext.all %>% filter(order==0)
 mock.inext.q2 <- mock.inext.all %>% filter(order==2)
 
+## plot; save as 8_mock_specaccum_byFiltMethod_q0; export at 900x600
+ggplot(data = mock.inext.q0, aes(x=x, y=y, color=Filt, shape=Filt)) +
+  geom_point(data = mock.inext.q0 %>% filter(method=="observed")) +
+  geom_line(data = mock.inext.q0 %>% filter(method=="interpolated")) +
+  geom_line(data = mock.inext.q0 %>% filter(method=="extrapolated"), linetype="dashed") +
+  geom_ribbon(data = mock.inext.q0, mapping=aes(x=x, ymin=y.lwr, ymax=y.upr, fill=Filt), alpha=0.1) +
+  facet_grid(Method ~ site, scales = "free_x") +
+  scale_color_manual(values=pal3) +
+  scale_x_continuous(labels=comma) +
+  labs(title="", x="sequences", y="sequence variants") +
+  theme_devon() + theme(legend.position="top", axis.text.x = element_text(angle=22.5, hjust=1))
+
+##### NOT RUN BELOW --- COULD USE IF WANTING TO SHOW DISTINCT Y-AXIS LABELS
 ## split again into two plots to help visualize distinct axes for vsearch vs. deblur/dada2
 dadbq0 <- ggplot(data = mock.inext.q0 %>% filter(Method != "vsearch"), aes(x=x, y=y, color=Filt, shape=Filt)) +
   geom_point(data = mock.inext.q0 %>% filter(method=="observed" & Method != "vsearch")) +
@@ -76,7 +89,6 @@ dadbq0 <- ggplot(data = mock.inext.q0 %>% filter(Method != "vsearch"), aes(x=x, 
   facet_grid(Method ~ site, scales = "free") +
   scale_color_manual(values=pal3) +
   scale_x_continuous(labels=comma) +
-  ylim(0,47) +
   labs(title="", x="", y="number of sequence variants", caption = "Shared yaxis scale for dada2 and deblur facets; alternate yaxis scale for vsearch. Note the x-axis varies freely to account for varying library sizes") +
   theme_devon() + 
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
@@ -90,7 +102,7 @@ vsq0 <- ggplot(data = mock.inext.q0 %>% filter(Method == "vsearch"), aes(x=x, y=
   facet_grid(Method ~ site, scales = "free") +
   scale_x_continuous(labels=comma) +
   scale_color_manual(values=pal3) +
-  ylim(0,1000) +
+  #ylim(0,1000) +
   #ylim(0,165) +
   labs(x="number of sequences", y="number of sequence variants") +
   theme_devon() +
@@ -98,7 +110,7 @@ vsq0 <- ggplot(data = mock.inext.q0 %>% filter(Method == "vsearch"), aes(x=x, y=
   theme(strip.background.x = element_blank(), strip.text.x = element_blank())
 
 ##plot; save as 8_mock_specaccum_byFiltMethod_q0; export at 1000x800
-q0 <- plot_grid(dadbq0, vsq0, ncol=1, rel_heights = c(2,1))
+plot_grid(dadbq0, vsq0, ncol=1, rel_heights = c(2,1))
 rm(dadbq0, vsq0)
 
 ##plot; save as 8_mock_specaccum_byFiltMethod_q2; export at 1000x800

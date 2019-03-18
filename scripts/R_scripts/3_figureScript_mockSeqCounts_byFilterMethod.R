@@ -21,7 +21,7 @@ df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tab
 mock <- df %>% filter(SampleType == "mock")
 mock$Labeler <- paste(mock$HashID, mock$Method, sep="-")
 rm(df)
-HashFiltLabels <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/HashIDs_withFiltLabels.csv")
+HashFiltLabels <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/HashIDs_withFiltLabels.csv")  ## from '1_sequence_filter.R` script`
 mock <- merge(mock, HashFiltLabels)
 mock$Labeler <- NULL
 rm(HashFiltLabels)
@@ -45,7 +45,7 @@ mock$MockAlign <- factor(mock$MockAlign,levels = c("exact", "partial", "miss"))
 mock$Filt <- factor(mock$Filt,levels = c("basic", "standard", "extra"))
 
 ## change facet labels?
-...
+
 
 ## plot; saved as '3_figure_mockSeqCounts_byFilterMethod'; export at 750x750
 ## note the numbero of distinct samples was manually added following the additional code below producing the `uniqHashTable` object
