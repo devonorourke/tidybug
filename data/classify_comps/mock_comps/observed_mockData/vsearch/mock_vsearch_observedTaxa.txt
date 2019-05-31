@@ -15,7 +15,7 @@ MockIM40	k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Blattidae;g__Perip
 MockIM42	k__Animalia;p__Arthropoda;c__Arachnida;o__Opiliones;f__Phalangiidae;g__Phalangium;s__Phalangium opilio
 MockIM44	k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Chironomidae;g__Procladius;s__Procladius sp. 1ES
 MockIM46	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae;g__Euphoria;s__Euphoria fulgida
-MockIM47	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia;s__
+MockIM47	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia
 MockIM49	k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa
 MockIM4	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera
 MockIM52	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus

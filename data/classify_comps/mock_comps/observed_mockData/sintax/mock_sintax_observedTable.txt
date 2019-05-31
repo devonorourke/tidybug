@@ -3,7 +3,8 @@ k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Tortricidae;g__Choristone
 k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Bombyliidae;g__Lepidophora;s__Lepidophora lutea	0.04102912	0.043280877	0.039800257	0.040020728
 k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera	0.041558797	0.041527922	0.045224735	0.042885623
 k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Geometridae;g__Haematopis;s__Haematopis grataria	0.046361597	0.042430433	0.046943524	0.048038998
-k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis	0.102304987	0.096846417	0.098377923	0.095670497
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis	0.045004672	0.042065958	0.043721393	0.043030681
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis	0.057300315	0.054780459	0.054656529	0.052639816
 k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Hydrophilidae;g__Cercyon;s__Cercyon praetextatus	0.048224393	0.053726703	0.048758067	0.046806959
 k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hyphantria;s__Hyphantria cunea	0.045332	0.042953593	0.047283452	0.048756653
 k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera	0.048551721	0.047349617	0.049361319	0.050519298
