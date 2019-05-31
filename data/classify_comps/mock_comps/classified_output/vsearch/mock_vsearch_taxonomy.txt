@@ -1,0 +1,25 @@
+Feature ID	Taxon	Confidence
+MockIM3	k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Culicidae	1.0
+MockIM27	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Hydrophilidae;g__Cercyon;s__Cercyon praetextatus	1.0
+MockIM7	k__Animalia;p__Arthropoda;c__Insecta;o__Trichoptera;f__Leptoceridae;g__Ceraclea;s__Ceraclea maculata	1.0
+MockIM15	k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Bombyliidae;g__Lepidophora;s__Lepidophora lutea	0.8333333333333334
+MockIM16	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Elophila;s__Elophila obliteralis	0.8333333333333334
+MockIM10	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Tortricidae;g__Choristoneura	0.9444444444444444
+MockIM4	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera	1.0
+MockIM28	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hyphantria;s__Hyphantria cunea	0.831858407079646
+MockIM23	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis	0.9763313609467456
+MockIM21	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis	0.9761904761904762
+MockIM20	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Geometridae;g__Haematopis;s__Haematopis grataria	1.0
+MockIM5	k__Animalia;p__Arthropoda;c__Insecta;o__Hemiptera;f__Aphididae;g__Aphis	0.9052132701421801
+MockIM29	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hypena;s__Hypena scabra	0.9850746268656716
+MockIM32	k__Animalia;p__Arthropoda;c__Insecta;o__Ephemeroptera;f__Heptageniidae;g__Leucrocuta;s__Leucrocuta maculipennis	1.0
+MockIM44	k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Chironomidae;g__Procladius;s__Procladius sp. 1ES	0.6719367588932806
+MockIM46	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae;g__Euphoria;s__Euphoria fulgida	0.6666666666666666
+MockIM47	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia	1.0
+MockIM33	k__Animalia;p__Arthropoda;c__Insecta;o__Neuroptera;f__Mantispidae;g__Dicromantispa;s__Dicromantispa sayi	1.0
+MockIM39	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Chrysomelidae;g__Paria;s__Paria fragariae	0.7184466019417476
+MockIM49	k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa	1.0
+MockIM42	k__Animalia;p__Arthropoda;c__Arachnida;o__Opiliones;f__Phalangiidae;g__Phalangium;s__Phalangium opilio	0.6872246696035242
+MockIM40	k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Blattidae;g__Periplaneta;s__Periplaneta fuliginosa	1.0
+MockIM52	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus	0.8
+MockIM53	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae	0.9241706161137441

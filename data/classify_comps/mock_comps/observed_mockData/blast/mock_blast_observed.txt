@@ -1,0 +1,25 @@
+#OTU ID	mockIM4p4L1	mockIM4p4L2	mockIM4p7L1	mockIM4p7L2
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Tortricidae;g__Choristoneura	0.042897868	0.041870083	0.041011548	0.041523796
+k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Bombyliidae;g__Lepidophora;s__Lepidophora lutea	0.04102912	0.043280877	0.039800257	0.040020728
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Elophila;s__Elophila obliteralis	0.041558797	0.041527922	0.045224735	0.042885623
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Geometridae;g__Haematopis;s__Haematopis grataria	0.046361597	0.042430433	0.046943524	0.048038998
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis-IM21	0.045004672	0.042065958	0.043721393	0.043030681
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis-IM23	0.057300315	0.054780459	0.054656529	0.052639816
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Hydrophilidae;g__Cercyon;s__Cercyon praetextatus	0.048224393	0.053726703	0.048758067	0.046806959
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hyphantria;s__Hyphantria cunea	0.045332	0.042953593	0.047283452	0.048756653
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hypena;s__Hypena scabra	0.048551721	0.047349617	0.049361319	0.050519298
+k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Culicidae	0.046813905	0.044832998	0.045272612	0.045631226
+k__Animalia;p__Arthropoda;c__Insecta;o__Ephemeroptera;f__Heptageniidae;g__Leucrocuta;s__Leucrocuta maculipennis	0.04938492	0.049913344	0.050098627	0.04447458
+k__Animalia;p__Arthropoda;c__Insecta;o__Neuroptera;f__Mantispidae;g__Dicromantispa;s__Dicromantispa sayi	0.043820338	0.045212351	0.035558343	0.043711117
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Chrysomelidae;g__Paria;s__Paria fragariae	0.033220851	0.033933437	0.032896375	0.034501845
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera	0.038975879	0.039812159	0.040623743	0.040013093
+k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Blattidae;g__Periplaneta;s__Periplaneta fuliginosa	0.027209913	0.028991939	0.027491047	0.027026589
+k__Animalia;p__Arthropoda;c__Arachnida;o__Opiliones;f__Phalangiidae;g__Phalangium;s__Phalangium opilio	0.046022365	0.04893397	0.048820308	0.047029318
+k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Chironomidae;g__Procladius;s__Procladius sp. 1ES	0.032619758	0.033787151	0.03386828	0.032058764
+k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae;g__Euphoria;s__Euphoria fulgida	0.042701471	0.038220367	0.041830247	0.043496393
+k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia;s__	0.036303689	0.03560953	0.035347684	0.035190871
+k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa	0.025323311	0.0264778	0.025575962	0.024146425
+k__Animalia;p__Arthropoda;c__Insecta;o__Hemiptera;f__Aphididae;g__Aphis	0.051217959	0.049504239	0.052119042	0.056016231
+k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus	0.042177745	0.045596662	0.042936209	0.042201369
+k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae	0.037666565	0.03721124	0.039273608	0.039126522
+k__Animalia;p__Arthropoda;c__Insecta;o__Trichoptera;f__Leptoceridae;g__Ceraclea;s__Ceraclea maculata	0.030280848	0.031977169	0.031527089	0.031153106

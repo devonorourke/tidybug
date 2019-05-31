@@ -1,0 +1,9 @@
+vsearch v2.13.4_linux_x86_64, 125.7GB RAM, 24 cores
+https://github.com/torognes/vsearch
+
+Reading file /mnt/lustre/macmaneslab/devon/guano/BOLDdb/allBOLD/tmp_foramptk_sedited.fasta 100%
+1120809068 nt in 1841946 seqs, min 100, max 1982, avg 608
+Counting k-mers 100%
+Creating k-mer index 100%
+Classifying sequences 100%
+Classified 24 of 24 sequences (100.00%)
