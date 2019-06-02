@@ -1,0 +1,24 @@
+MockIM10 k__Arthropoda;p__Insecta;c__Lepidoptera;NA;NA;NA;NA
+MockIM15 k__Arthropoda;p__Insecta;c__Diptera;o__Bombyliidae;f__Lepidophora;NA;NA
+MockIM16 k__Arthropoda;p__Insecta;c__Lepidoptera;o__Crambidae;f__Elophila;g__Elophila obliteralis;NA
+MockIM20 k__Arthropoda;p__Insecta;c__Lepidoptera;NA;NA;NA;NA
+MockIM21 k__Arthropoda;p__Insecta;c__Coleoptera;o__Coccinellidae;f__Harmonia;g__Harmonia axyridis;NA
+MockIM23 k__Arthropoda;p__Insecta;c__Coleoptera;o__Coccinellidae;f__Harmonia;g__Harmonia axyridis;NA
+MockIM27 k__Arthropoda;p__Insecta;NA;NA;NA;NA;NA
+MockIM28 k__Arthropoda;p__Insecta;c__Lepidoptera;o__Erebidae;f__Hyphantria;g__Hyphantria cunea;NA
+MockIM29 k__Arthropoda;p__Insecta;c__Lepidoptera;o__Erebidae;f__Hypena;g__Hypena scabra;NA
+MockIM3 k__Arthropoda;p__Insecta;c__Diptera;o__Culicidae;f__Aedes;g__Aedes vexans;NA
+MockIM32 k__Arthropoda;p__Insecta;c__Ephemeroptera;o__Heptageniidae;f__Leucrocuta;g__Leucrocuta maculipennis;NA
+MockIM33 k__Arthropoda;NA;NA;NA;NA;NA;NA
+MockIM39 k__Arthropoda;p__Insecta;c__Coleoptera;o__Chrysomelidae;f__Paria;g__Paria fragariae;NA
+MockIM4 k__Arthropoda;p__Insecta;c__Lepidoptera;o__Noctuidae;f__Agrotis;NA;NA
+MockIM40 k__Arthropoda;p__Insecta;c__Blattodea;o__Blattidae;f__Periplaneta;g__Periplaneta fuliginosa;NA
+MockIM42 k__Arthropoda;p__Arachnida;c__Opiliones;o__Phalangiidae;f__Phalangium;g__Phalangium opilio;NA
+MockIM44 k__Arthropoda;p__Insecta;c__Diptera;o__Chironomidae;f__Procladius;NA;NA
+MockIM46 k__Arthropoda;p__Insecta;c__Coleoptera;o__Scarabaeidae;f__Euphoria;g__Euphoria fulgida;NA
+MockIM47 k__Arthropoda;p__Insecta;c__Orthoptera;o__Tettigoniidae;f__Scudderia;NA;NA
+MockIM49 k__Arthropoda;p__Insecta;c__Blattodea;o__Ectobiidae;f__Supella;g__Supella longipalpa;NA
+MockIM5 k__Arthropoda;p__Insecta;c__Hemiptera;o__Aphididae;f__Aphis;NA;NA
+MockIM52 k__Arthropoda;p__Insecta;NA;NA;NA;NA;NA
+MockIM53 k__Arthropoda;p__Insecta;c__Lepidoptera;o__Crambidae;f__Udea;NA;NA
+MockIM7 k__Arthropoda;p__Insecta;NA;NA;NA;NA;NA

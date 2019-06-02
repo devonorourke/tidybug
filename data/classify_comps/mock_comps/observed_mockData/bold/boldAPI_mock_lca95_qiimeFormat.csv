@@ -1,0 +1,25 @@
+query,keeper
+MockIM10,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera
+MockIM15,k__Animalia;p__Arthropoda;c__Insecta
+MockIM16,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Elophila;s__Elophila obliteralis;
+MockIM20,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera
+MockIM21,k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis;
+MockIM23,k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Coccinellidae;g__Harmonia;s__Harmonia axyridis;
+MockIM27,k__Animalia;p__Arthropoda;c__Insecta
+MockIM28,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hyphantria;s__Hyphantria cunea;
+MockIM29,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hypena;s__Hypena scabra;
+MockIM3,k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Culicidae;g__Aedes;s__Aedes vexans;
+MockIM32,k__Animalia;p__Arthropoda;c__Insecta
+MockIM33,k__Animalia;p__Arthropoda
+MockIM39,k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Chrysomelidae;g__Paria;s__Paria fragariae;
+MockIM4,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Noctuidae;g__Agrotis
+MockIM40,k__Animalia;p__Arthropoda;c__Insecta
+MockIM42,k__Animalia;p__Arthropoda;c__Arachnida;o__Opiliones;f__Phalangiidae;g__Phalangium;s__Phalangium opilio;
+MockIM44,k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Chironomidae;g__Procladius
+MockIM46,k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae;g__Euphoria
+MockIM47,k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia
+MockIM49,k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa;
+MockIM5,k__Animalia;p__Arthropoda;c__Insecta;o__Hemiptera;f__Aphididae;g__Aphis
+MockIM52,k__Animalia;p__Arthropoda;c__Insecta
+MockIM53,k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Udea
+MockIM7,k__Animalia;p__Arthropoda;c__Insecta
