@@ -3,7 +3,7 @@
 #SBATCH -D /mnt/lustre/macmaneslab/devon/guano/Data/tidy_paper/classifer_comps/guano_comps/sintax
 #SBATCH --job-name="guano_st"
 #SBATCH --output="guano_st.log"
-#SBATCH --cpus-per-task=12
+#SBATCH --cpus-per-task=24
 
 module purge
 module load linuxbrew/colsa
@@ -17,4 +17,4 @@ $VSEARCH \
 --db $SINFASTA \
 --tabbedout vsintax_guano_out.txt \
 --sintax_cutoff 0.9 \
---threads 12
+--threads 24

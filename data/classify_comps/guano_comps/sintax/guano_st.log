@@ -5,5 +5,4 @@ Reading file /mnt/lustre/macmaneslab/devon/guano/BOLDdb/allBOLD/tmp_foramptk.fas
 1120809068 nt in 1841946 seqs, min 100, max 1982, avg 608
 Counting k-mers 100%
 Creating k-mer index 100%
-Classifying sequences 100%
-Classified 12938 of 13407 sequences (96.50%)
+Classifying sequences
