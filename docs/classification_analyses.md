@@ -1,4 +1,4 @@
-# Classifiers and databases used
+# Classifiers and databases setup
 We compared the taxonomic information provided by five different classifiers. The _tidybug_ database described in the [database_construction.md](https://github.com/devonorourke/tidybug/blob/master/docs/database_construction.md) document served as the reference source to classify mock and guano data for four of the five classifiers:
 1. QIIME 2 implementation of VSEARCH (global aligner)
 2. QIIME 2 implementation of BLAST (local aligner)
@@ -14,17 +14,7 @@ All of these files are available at the [OSF repo for this project](https://osf.
 
 The fifth classifier relied on the BOLD API [Taxonomy Engine](http://v4.boldsystems.org/index.php/resources/api?type=taxonomy), which does not provide details about specific parameters invoked during classification, nor does it specify the content of the database used for it's classification. Thus, while the tidybug database was derived from BOLD references, it's unclear whether the contents of our database were identical to those references that the BOLD API used. We classified our sequences using the BOLD API through the `bold` R package. Notably, the output of the Taxonomy API is not a single match like with the other classifiers, rather, it is a list of up to 100 potential "hits". We therefore and applied specific filtering parameters to this list to best match those of the other classifiers when possible. Specifically, we retained matches only above 97% identity, and because query coverage was not a parameter that was provided in the output, we applied an LCA process to those remaining hits. See the 'boldAPI_classification_*Samples.R' scripts for details about filters applied.
 
-
-# Data input
-## Mock samples
-
-
-
-## Guano samples
-
-
-
-# Classification Programs
+# Classification Parameters
 Mock samples and guano samples were processed separately using the parameters defined below. In both cases we used a QIIME 2 environment to classify samples with VSEARCH, BLAST, and Naive Bayes programs. The BOLD API required a separate workflow described below. The SINTAX classifier was implemented using VSEARCH-v2.13.4.
 
 ## Mock samples
@@ -44,7 +34,7 @@ qiime tools import \
 
 The `.qza` file was used as input for each of the QIIME 2-based classifiers, while the `.fa` version was used in the SINTAX and BOLD API inputs.
 
-### Classifier parameters
+---
 
 **BLAST**: Modified the number of accepted hits from default (10) to 1000. Would have set to 0, except BLAST doesn't allow for this parameter in the QIIME implementation. Percent identity (0.97) and percent query coverage (0.89) match VSEARCH parameters, both of which were modified from default settings.
 ```
@@ -132,7 +122,8 @@ qiime tools export --input-path dada2.arthseqs.qza --output-path dada2.arthASVs.
 
 Both the `.qza` and `.fasta` files are available in the [data/qiime directory of the Tidybug repo](https://github.com/devonorourke/tidybug/tree/master/data/qiime).
 
-### Classifier parameters
+---
+
 **BLAST**: As with the mock samples, we matched parameters between VSEARCH and BLAST.
 ```
 qiime feature-classifier classify-consensus-blast \
