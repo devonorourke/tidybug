@@ -20,7 +20,7 @@ df <- df %>% filter(SampleType != "mock")
 df$Labeler <- paste(df$Method, df$Filt, df$Library, sep="-")
 
 ################################################################################
-## data generation and stats behind rarefied mock data
+## data generation and stats behind rarefied guano data
 ################################################################################
 
 ## function to calculate Hill Numbers per Method + Filt (grouping all guano data among all libraries)
@@ -118,7 +118,7 @@ write.csv(dunnout_q2, file="~/Repos/tidybug/data/text_tables/dunn_guano/guano_ra
 
 
 ################################################################################
-## data generation and stats behind rarefied mock data
+## data generation and stats behind unrarefied guano data
 ################################################################################
 
 ## function to calculate Hill Numbers per Method + Filt (grouping all guano data among all libraries)
