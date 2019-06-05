@@ -102,11 +102,12 @@ paste -d '\t' tmp.left tmp.seqs | tr '\t' '\n' > tmp_nolabels.fasta
 rm tmp.left tmp.seqs
 ```
 
-We'll use that `tmp_nolabels.fasta` file as input for the [pick_otus.py](http://qiime.org/scripts/pick_otus.html) script. We switch the conda environments from the ``
+We'll use that `tmp_nolabels.fasta` file as input for the [pick_otus.py](http://qiime.org/scripts/pick_otus.html) script. Note that we're switching conda environments.
 ```
 conda activate dev_qiime1
 pick_otus.py -i tmp_nolabels.fasta -o pid100_otus --similarity 1.0 --threads 24
 ```
+
 This generates a `tmp_nolabels_otus.txt` text file within a newly created `pid100_otus` directory that is used in the next [create_consensus_taxonomy.py](https://gist.github.com/walterst/bd69a19e75748f79efeb) script to generate the mapping file that will apply the LCA algorithm.
 
 We next apply three inputs (`tmp_nolabels.taxa`, `tmp_nolabels.fasta`, and `tmp_nolabels_otus.txt`) to generate a consensus mapping file output (`outmap.txt`) for our data:
@@ -138,7 +139,7 @@ Sorting 100%
 Writing output file 100%  
 ```
 
-We'll use this dataset for one final purpose prior to converting into the appropriate QIIME format- clustering this dereplicated set.
+The `tmp_nolabels.fasta` file is next used to analyze the effect of clustering a dataset. Note that the `boldCOI.derep.fasta` file is used to be imported into QIIME format (see below). The `boldCOI.derep.fasta` file made available on our [OSF repo for this project](https://osf.io/k3eh6/files/).
 
 ## Clustering data
 I wanted to understand how clustering databases prior to classification can reduce taxonomic information in a dataset. I suspect the motivation behind those using this approach is partly due to improving computational speed (fewer sequences means faster searching) while reducing computing hardware (smaller datasets require less memory to compute and less disk space to write to), as well as a biological inclination that clustering sequences with similar sequence identities produces fewer unique sequence variants the resulting dataset can contain. The former argument is certainly important if you want to do this work on a laptop, but not a necessity with the nearly ubiquitous and cheap access to cloud computing resources. The latter argument is just unnecessary - if computing resources are no issue, we shouldn't cluster before hand - we should cluster after the fact if so desired because you can't do the reverse if your database is clustered to begin with.
@@ -188,11 +189,11 @@ We make a temporary list of all the sequenceID values from the headers of the `b
 ```
 grep '^>' boldCOI.derep.fasta | sed 's/>//' > derep.seqid.tmp
 awk 'FNR==NR {hash[$1]; next} $1 in hash' derep.seqid.tmp outmap.txt > boldCOI.derep.txt
-sed 's/Animalia;/k__Animalia;p__/' boldCOI.derep.txt | sed 's/;/;c__/2' | sed 's/;/;o__/3' | sed 's/;/;f__/4' | sed 's/;/;g__/5' | sed 's/;/;s__/6' > boldCOI.derep.qiime.tmp
+sed 's/Animalia;/k__Animalia;p__/' boldCOI.derep.txt | sed 's/;/;c__/2' | sed 's/;/;o__/3' | sed 's/;/;f__/4' | sed 's/;/;g__/5' | sed 's/;/;s__/6' > boldCOI.arth_derep.txt
 rm derep.seqid.tmp
 ```
 
-The `boldCOI.derep.fasta` and `boldCOI.derep.qiime.tmp` files are imported into QIIME2:
+The `boldCOI.derep.fasta` and `boldCOI.arth_derep.txt` files are imported into QIIME2:
 
 ```
 ## fasta file import
@@ -205,16 +206,20 @@ qiime tools import \
 qiime tools import \
   --type 'FeatureData[Taxonomy]' \
   --input-format HeaderlessTSVTaxonomyFormat \
-  --input-path boldCOI.derep.qiime.tmp \
+  --input-path boldCOI.arth_derep.txt \
   --output-path boldCOI.derep.tax.qza
-
-## remove temporary file:
-rm boldCOI.derep.qiime.tmp
 ```
 
-Note that following import into QIIME2, the `boldCOI.derep.txt` file was further processed for additional use in other R scripts:
+Note that following import into QIIME2, the `boldCOI.arth_derep.txt` file was further processed for additional use in other R scripts:
 ```
-zcat boldCOI.derep.txt.gz | cut -f 1 > tmp1
-zcat boldCOI.derep.txt.gz | cut -f 2- | cut -d ';' -f 3- > tmp2
+zcat boldCOI.arth_derep.txt | cut -f 1 > tmp1
+zcat boldCOI.arth_derep.txt | cut -f 2- | cut -d ';' -f 3- > tmp2
 paste tmp1 tmp2 -d ';' | gzip --best > boldCOI.derep.txt.gz
 ```
+
+## Data availability
+The following files are available at the [OSF repo for this project](https://osf.io/k3eh6/files/):
+- `boldCOI.derep.fasta`
+- `boldCOI.arth_derep.txt`
+- `boldCOI.derep.seqs.qza`
+- `boldCOI.derep.tax.qza`
