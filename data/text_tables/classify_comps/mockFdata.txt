@@ -1,0 +1,6 @@
+Classifier Class Order Family Genus Species
+blast 1 1 0.93 0.83 0.79
+vsearch 1 1 0.93 0.83 0.79
+nbayes 1 1 0.96 0.86 0.73
+sintax 1 1 0.86 0.69 0.62
+bold 0.98 0.91 0.85 0.89 0.81

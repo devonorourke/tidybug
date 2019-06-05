@@ -1,0 +1,7 @@
+            Df Sum Sq Mean Sq F value Pr(>F)    
+Method       2  39.68  19.840 576.609 <2e-16 ***
+Filt         2   0.06   0.030   0.864  0.433    
+Method:Filt  4   0.03   0.007   0.192  0.941    
+Residuals   27   0.93   0.034                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

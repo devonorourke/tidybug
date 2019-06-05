@@ -1,0 +1,6 @@
+
+	Kruskal-Wallis rank sum test
+
+data:  Hill_value by Labeler
+Kruskal-Wallis chi-squared = 30.55, df = 8, p-value = 0.0001689
+

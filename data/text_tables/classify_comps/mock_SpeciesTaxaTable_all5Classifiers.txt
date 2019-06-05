@@ -1,0 +1,25 @@
+IMalias blast bold Expected nbayes sintax vsearch
+MockIM10 NA NA NA NA Choristoneura rosaceana NA
+MockIM15 Lepidophora lutea NA Lepidophora lutea NA Lepidophora lutea Lepidophora lutea
+MockIM16 Elophila obliteralis Elophila obliteralis Elophila obliteralis Elophila obliteralis NA Elophila obliteralis
+MockIM20 Haematopis grataria NA Haematopis grataria Haematopis grataria Haematopis grataria Haematopis grataria
+MockIM21 Harmonia axyridis Harmonia axyridis Harmonia axyridis Harmonia axyridis Harmonia axyridis Harmonia axyridis
+MockIM23 Harmonia axyridis Harmonia axyridis Harmonia axyridis Harmonia axyridis Harmonia axyridis Harmonia axyridis
+MockIM27 Cercyon praetextatus NA NA Cercyon praetextatus Cercyon praetextatus Cercyon praetextatus
+MockIM28 Hyphantria cunea Hyphantria cunea Hyphantria cunea Hyphantria cunea Hyphantria cunea Hyphantria cunea
+MockIM29 Hypena scabra Hypena scabra Hypena scabra NA NA Hypena scabra
+MockIM3 NA Aedes vexans Aedes vexans Aedes vexans NA NA
+MockIM32 Leucrocuta maculipennis Leucrocuta maculipennis Leucrocuta maculipennis Leucrocuta maculipennis Leucrocuta maculipennis Leucrocuta maculipennis
+MockIM33 Dicromantispa sayi NA NA Dicromantispa sayi Dicromantispa sayi Dicromantispa sayi
+MockIM39 Paria fragariae Paria fragariae Paria fragariae NA NA Paria fragariae
+MockIM4 NA NA Agrotis ipsilon NA NA NA
+MockIM40 Periplaneta fuliginosa Periplaneta fuliginosa Periplaneta fuliginosa Periplaneta fuliginosa Periplaneta fuliginosa Periplaneta fuliginosa
+MockIM42 Phalangium opilio Phalangium opilio Phalangium opilio Phalangium opilio NA Phalangium opilio
+MockIM44 Procladius sp. 1ES NA NA NA Ambiguous taxa Procladius sp. 1ES
+MockIM46 Euphoria fulgida Euphoria fulgida NA Euphoria fulgida NA Euphoria fulgida
+MockIM47 NA NA NA NA NA NA
+MockIM49 Supella longipalpa Supella longipalpa Supella longipalpa Supella longipalpa Supella longipalpa Supella longipalpa
+MockIM5 NA NA NA NA NA NA
+MockIM52 Conocephalus strictus NA NA Conocephalus strictus Conocephalus strictus Conocephalus strictus
+MockIM53 NA NA NA NA NA NA
+MockIM7 Ceraclea maculata NA Ceraclea maculata Ceraclea maculata Ceraclea maculata Ceraclea maculata
