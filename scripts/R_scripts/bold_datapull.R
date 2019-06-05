@@ -7,7 +7,7 @@ library(taxize)
 library(rvest)
 library(stringr)
 
-## getting list of all Arthropod names in BOLD
+## getting list of all Arthropod names in NCBI
 x <- downstream("Arthropoda", db = "ncbi", downto = "class")
 x.nms <- x$Arthropoda$childtaxa_name
 x.checks <- bold_tax_name(x.nms)

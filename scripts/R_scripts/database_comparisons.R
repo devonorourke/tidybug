@@ -2,6 +2,8 @@ library(tidyverse)
 library(scales)
 library(ggpubr)
 library(viridis)
+library(UpSetR)
+library(grid)
 
 # theme function for custom plot style:
 theme_devon <- function () { 
@@ -143,7 +145,7 @@ uniq_df$Database <- factor(uniq_df$Database, levels = c("tidybug", "Palmer", "Po
 uniq_df$Level <- factor(uniq_df$Level, levels = c("Species", "Genus", "Family", "Order", "Class"))
 
 ## plot; save as db_2_uniqueness; export at 800x400
-ggplot(uniq_df, aes(x=Database, y=nUniq, fill=Database)) +
+p1 <- ggplot(uniq_df, aes(x=Database, y=nUniq, fill=Database)) +
   geom_bar(stat="identity") +
   facet_wrap(Level ~ ., ncol = 5, scales = "free") +
   scale_shape_manual(values = c(0,1,2,3)) +
@@ -166,161 +168,190 @@ write.csv(tmpuniq, file="~/Repos/tidybug/data/text_tables/database_evals/uniqTax
 write.csv(miss_df, file="~/Repos/tidybug/data/text_tables/database_evals/uniqSeqs.csv",
           row.names = FALSE, quote = FALSE)
 
-## plot; save as db_3_nSeqs; export at 800x600
+## reshape data for plot
 alt_miss_df <- miss_df %>% gather(key = Type, value = nTaxa, Present)
+
+## set levels for plot
 alt_miss_df$Level <- factor(alt_miss_df$Level, levels = c("Species", "Genus", "Family", "Order", "Class"))
 alt_miss_df$Database <- factor(alt_miss_df$Database, levels = c("tidybug", "Palmer", "Porter"))
 
-str(alt_miss_df)
-
-ggplot(alt_miss_df, aes(x=Database, y=nTaxa, fill=Database)) +
+## plot; save as db_3_nSeqs; export at 800x400
+p2 <- ggplot(alt_miss_df, aes(x=Database, y=nTaxa, fill=Database)) +
   geom_bar(stat="identity") +
-  facet_wrap(Level ~ ., ncol = 5, scales = "free") +
+  facet_wrap(Level ~ ., ncol = 5) +
   scale_shape_manual(values = c(0,1,2,3)) +
   #scale_y_continuous(labels = comma) +
   scale_y_continuous(breaks = scales::pretty_breaks(4), limits = c(0, NA), labels = comma) +
   scale_fill_manual(values = vpal3) +
   geom_line() +
-  labs(x="", y="distinct taxa", title="") +
+  labs(x="", y="distinct sequences", title="") +
   theme_devon() +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
         legend.position = "top")
 
-## plot; save as db_3b_completeness; export at 600x475
-miss_df$Database <- factor(miss_df$Database, levels = c("original", "derep", "Palmer", "Porter"))
-miss_df$Level <- factor(miss_df$Level, levels = c("Class", "Order", "Family", "Genus", "Species"))
-ggplot(miss_df, aes(x=Level, y=pPresent, group=Database, color=Database, shape=Database)) +
-  geom_point(size = 3, stroke=1.2) +
-  scale_shape_manual(values = c(0,1,2,3)) +
-  scale_color_manual(values = pal4) +
-  geom_line() +
-  labs(x="", y="Fraction taxa with information", title="") +
-  theme_devon()
+## stitch two plots together:
+## save as 6_figure_db_taxaNseqComps; export at 800x800
+ggarrange(p1, p2, nrow = 2, common.legend = TRUE, labels = c("A", "B"))
 
 
-
-## add in abundance freuquencies
-alt_abund_df <- abund_df %>% group_by(Level, Database) %>% mutate(nObs=sum(counts)) %>% mutate(pCounts=counts/nObs)
-## export entire data.frame as single .csv file:
-write.csv(alt_abund_df, file="~/Repos/tidybug/data/text_tables/db_abundances.csv", row.names = FALSE)
-
-## plots separated by Levels, then grouped after creating unique x-axes; 
-class_abund <- alt_abund_df %>% filter(Level == "Class") %>% group_by(Database) %>% mutate(cumFrac=cumsum(pCounts))
-order_abund <- alt_abund_df %>% filter(Level == "Order") %>% group_by(Database) %>% mutate(cumFrac=cumsum(pCounts))
-family_abund <- alt_abund_df %>% filter(Level == "Family") %>% group_by(Database) %>% mutate(cumFrac=cumsum(pCounts))
-genus_abund <- alt_abund_df %>% filter(Level == "Genus") %>% group_by(Database) %>% mutate(cumFrac=cumsum(pCounts))
-
-## select just the TaxaNames with common Levels from top hits (not the "others")
-hitsfunction <- function(data, filter1, filter2){
-  filter1_enq <- enquo(filter1)
-  filter2_enq <- enquo(filter2)
-  tmp.df <- data %>% filter(!!filter1_enq) %>% filter(!!filter2_enq) %>% arrange(-counts) %>% group_by(Level) %>% select(TaxaName)
-  as.character(tmp.df$TaxaName)
+################################################################################
+## upset plots to compare overlaps in shared taxa
+################################################################################
+## functions to gather distinct Family, Genus, or Species names
+uSpecies.function <- function(data, DBname) {
+  data %>% 
+    filter(!is.na(species_name)) %>% 
+    mutate(taxa = paste(class_name, order_name, family_name, genus_name, species_name, sep = '_')) %>% 
+    distinct(taxa) %>% 
+    mutate(DBname = DBname)
 }
 
-derep.ordhits <- hitsfunction(order_abund, Database=="derep", TaxaName!="others")
-palmer.ordhits <- hitsfunction(order_abund, Database=="Palmer", TaxaName!="others")
-porter.ordhits <- hitsfunction(order_abund, Database=="Porter", TaxaName!="others")
-ordhits <- intersect(intersect(derep.ordhits, palmer.ordhits),porter.ordhits)
+uGenus.function <- function(data, DBname) {
+  data %>% 
+    filter(!is.na(genus_name)) %>% 
+    mutate(taxa = paste(class_name, order_name, family_name, genus_name, sep = '_')) %>% 
+    distinct(taxa) %>% 
+    mutate(DBname = DBname)
+}
 
-derep.famhits <- hitsfunction(family_abund, Database=="derep", TaxaName!="others")
-palmer.famhits <- hitsfunction(family_abund, Database=="Palmer", TaxaName!="others")
-porter.famhits <- hitsfunction(family_abund, Database=="Porter", TaxaName!="others")
-famhits <- intersect(intersect(derep.famhits, palmer.famhits),porter.famhits)
-
-derep.genhits <- hitsfunction(genus_abund, Database=="derep", TaxaName!="others")
-palmer.genhits <- hitsfunction(genus_abund, Database=="Palmer", TaxaName!="others")
-porter.genhits <- hitsfunction(genus_abund, Database=="Porter", TaxaName!="others")
-genhits <- intersect(intersect(derep.genhits, palmer.genhits),porter.genhits)
-
-## 3 color palette from 4pal
-pal3 <- c("#0D0887FF", "#DA5B6AFF", "#FEBA2CFF")
-
-## plots - creating a 2x3 plot with total counts (left column) and percentages (right column) for Order through Genus Levels (rows)
-## sort the plot order by descending $count for the "derep" Database
-order.order <- order_abund %>% filter(Database=="derep") %>% filter(TaxaName %in% ordhits) %>% arrange(-counts) %>% group_by(Level) %>% select(TaxaName)
-order.order <- as.character(order.order$TaxaName)
-order_abund$TaxaName <- factor(order_abund$TaxaName, levels = order.order)
-
-family.order <- family_abund %>% filter(Database=="derep") %>% filter(TaxaName %in% famhits) %>% arrange(-counts) %>% group_by(Level) %>% select(TaxaName)
-family.order <- as.character(family.order$TaxaName)
-family_abund$TaxaName <- factor(family_abund$TaxaName, levels = family.order)
-
-genus.order <- genus_abund %>% filter(Database=="derep") %>% filter(TaxaName %in% genhits) %>% arrange(-counts) %>% group_by(Level) %>% select(TaxaName)
-genus.order <- as.character(genus.order$TaxaName)
-genus_abund$TaxaName <- factor(genus_abund$TaxaName, levels = genus.order)
+uFamily.function <- function(data, DBname) {
+  data %>% 
+    filter(!is.na(family_name)) %>% 
+    mutate(taxa = paste(class_name, order_name, family_name, sep = '_')) %>% 
+    distinct(taxa) %>% 
+    mutate(DBname = DBname)
+}
 
 
-pop <- ggplot(data=order_abund %>% filter(TaxaName %in% ordhits), aes(fill=Database, y=pCounts, x=TaxaName)) +
-  geom_bar(stat = "identity", color="gray30", position="dodge") +
-  scale_fill_manual(values=pal3) + 
-  scale_y_continuous(limits = c(0,0.45), breaks = c(0, 0.2, 0.4)) +
-  labs(x="", y="", subtitle = "common abundant Orders") +
-  theme_devon() +
-  theme(axis.text.x = element_text(angle=22.5, hjust = 1),
-        axis.title.y = element_text(margin = margin(0, 5, 0, 0)),
-        plot.subtitle = element_text(size = 10),
-        legend.position = "top")
+##read in palmer data
+palmer_taxa <- read_csv(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/palmer.taxa.txt.gz", col_names = FALSE)
+colnames(palmer_taxa) <- c("class_name", "order_name", "family_name", "genus_name", "species_name")
+palmer_taxa <- as.data.frame(apply(palmer_taxa, 2, function(y) (gsub(".:", "", y))))  ## remove prefixes for each taxa (ex. 'p:', or 'c:', etc.)
+## generate unique taxa strings
+palmer_uSpecies <- uSpecies.function(palmer_taxa, 'Palmer')
+palmer_uGenus <- uGenus.function(palmer_taxa, 'Palmer')
+palmer_uFamily <- uFamily.function(palmer_taxa, 'Palmer')
+rm(palmer_taxa)
 
-poc <- ggplot(data=order_abund %>% filter(TaxaName %in% ordhits), aes(fill=Database, y=counts, x=TaxaName)) +
-  geom_bar(stat = "identity", color="gray30", position="dodge") +
-  scale_fill_manual(values=pal3) + 
-  scale_y_continuous(labels = comma, breaks = c(0, 300000, 600000)) +
-  labs(x="", y="", subtitle = "common abundant Orders") +
-  theme_devon() +
-  theme(axis.text.x = element_text(angle=22.5, hjust = 1),
-        axis.title.y = element_text(margin = margin(0, 5, 0, 0)),
-        plot.subtitle = element_text(size = 10),
-        legend.position = "top")
+## read in porter data
+porter_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/porter.taxa.txt.gz", col_names = FALSE, delim = ';')
+colnames(porter_taxa) <- c("sequenceID", "class_name", "order_name", "family_name", "genus_name", "species_name")
+porter_taxa <- as.data.frame(apply(porter_taxa, 2, function(y) (gsub("_", " ", y))))    ## replace underscore in species names with spaces to match other database naming conventions
+porter_taxa <- as.data.frame(apply(porter_taxa, 2, function(y) (gsub("Ambiguous taxa", NA, y))))    ## substitute the Ambiguous Taxa designation with NA (it's unknown!)
+## generate unique taxa strings
+porter_uSpecies <- uSpecies.function(porter_taxa, 'Porter')
+porter_uGenus <- uGenus.function(porter_taxa, 'Porter')
+porter_uFamily <- uFamily.function(porter_taxa, 'Porter')
+rm(porter_taxa)
 
-pfp <- ggplot(data=family_abund %>% filter(TaxaName %in% famhits), aes(fill=Database, y=pCounts, x=TaxaName)) +
-  geom_bar(stat = "identity", color="gray30", position="dodge") +
-  scale_fill_manual(values=pal3) + 
-  labs(x="", y="fraction distinct sequences", subtitle = "common abundant Families") +
-  scale_y_continuous(limits = c(0,0.1), breaks = c(0, 0.05, 0.1)) +
-  theme_devon() +
-  theme(axis.text.x = element_text(angle=22.5, hjust = 1),
-        axis.title.y = element_text(margin = margin(0, 5, 0, 0)),
-        plot.subtitle = element_text(size = 10),
-        legend.position = "top")
-
-pfc <- ggplot(data=family_abund %>% filter(TaxaName %in% famhits), aes(fill=Database, y=counts, x=TaxaName)) +
-  geom_bar(stat = "identity", color="gray30", position="dodge") +
-  scale_fill_manual(values=pal3) + 
-  scale_y_continuous(labels = comma, breaks = c(0, 75000, 150000)) +
-  labs(x="", y="distinct sequences", subtitle = "common abundant Families") +
-  theme_devon() +
-  theme(axis.text.x = element_text(angle=22.5, hjust = 1),
-        axis.title.y = element_text(margin = margin(0, 5, 0, 0)),
-        plot.subtitle = element_text(size = 10),
-        legend.position = "top")
-
-pgp <- ggplot(data=genus_abund %>% filter(TaxaName %in% genhits), aes(fill=Database, y=pCounts, x=TaxaName)) +
-  geom_bar(stat = "identity", color="gray30", position="dodge") +
-  scale_fill_manual(values=pal3) +
-  labs(y="", x="", subtitle = "common abundant Genera") +
-  scale_y_continuous(limits = c(0,0.04), breaks = c(0, 0.02, 0.04)) +
-  theme_devon() +
-  theme(axis.text.x = element_text(angle=22.5, hjust = 1),
-        axis.title.y = element_text(margin = margin(0, 5, 0, 0)),
-        plot.subtitle = element_text(size = 10),
-        legend.position = "top")
-
-pgc <- ggplot(data=genus_abund %>% filter(TaxaName %in% genhits), aes(fill=Database, y=counts, x=TaxaName)) +
-  geom_bar(stat = "identity", color="gray30", position="dodge") +
-  scale_fill_manual(values=pal3) +
-  scale_y_continuous(labels = comma, breaks = c(0, 20000, 40000)) +
-  labs(y="", x="", subtitle = "common abundant Genera") +
-  theme_devon() +
-  theme(axis.text.x = element_text(angle=22.5, hjust = 1),
-        axis.title.y = element_text(margin = margin(0, 5, 0, 0)),
-        plot.subtitle = element_text(size = 10),
-        legend.position = "top")
+## read in tidybug data
+tidybug_taxa <- read_delim(file = "https://github.com/devonorourke/tidybug/raw/master/data/databases/derep.taxa.txt.gz", delim = ";", col_names = FALSE)
+colnames(tidybug_taxa) <- c("class_name", "order_name", "family_name", "genus_name", "species_name")
+tidybug_taxa <- as.data.frame(apply(tidybug_taxa, 2, function(y) (gsub("Ambiguous_taxa", NA, y))))    ## substitute the Ambiguous Taxa designation with NA (it's unknown!)
+## generate unique taxa strings
+tidybug_uSpecies <- uSpecies.function(tidybug_taxa, 'tidybug')
+tidybug_uGenus <- uGenus.function(tidybug_taxa, 'tidybug')
+tidybug_uFamily <- uFamily.function(tidybug_taxa, 'tidybug')
+rm(tidybug_taxa)
 
 
-## plot all 6 graphics together; save as db_4_abundantTaxa; export at 1000 x 800
-ggarrange(pop, poc, pfp, pfc, pgp, pgc,
-          common.legend = TRUE, legend = "top",
-          ncol=2, nrow = 3, 
-          heights = c(1.2, 1, 1))
+## combine datasets per taxa Rank and convert to Upset format with binary presence/absence
+#########
+#species-data combined here:
+#########
+
+tmp1 <- merge(porter_uSpecies, palmer_uSpecies, by = 'taxa', all = TRUE)
+upset_species <- merge(tmp1, tidybug_uSpecies, by = 'taxa', all=TRUE)
+rm(tmp1)
+colnames(upset_species)[2:4] <- c("Porter", "Palmer", "tidybug")
+## data tidying
+upset_species$tidybug <- ifelse(grepl("tidybug", upset_species$tidybug), gsub("tidybug", 1, upset_species$tidybug), upset_species$tidybug)
+upset_species$Porter <- ifelse(grepl("Porter", upset_species$Porter), gsub("Porter", 1, upset_species$Porter), upset_species$Porter)
+upset_species$Palmer <- ifelse(grepl("Palmer", upset_species$Palmer), gsub("Palmer", 1, upset_species$Palmer), upset_species$Palmer)
+upset_species[is.na(upset_species)] <- 0
+upset_species$tidybug <- as.numeric(upset_species$tidybug)
+upset_species$Porter <- as.numeric(upset_species$Porter)
+upset_species$Palmer <- as.numeric(upset_species$Palmer)
+
+## upset plot for taxa with Species-rank information
+## save as '
+upset(upset_species, sets = c("Palmer", "Porter", "tidybug"), 
+      sets.bar.color = vpal3,
+      order.by = "freq", empty.intersections = "on",
+      mainbar.y.label = "shared species\n\n",
+      sets.x.label = "unique Species", 
+      text.scale = c(1.2, 1.2, 1, 1, 1, 1.2))  # follows this order: (intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+
+#########
+#Genus-data combined here:
+#########
+
+tmp1 <- merge(porter_uGenus, palmer_uGenus, by = 'taxa', all = TRUE)
+upset_Genus <- merge(tmp1, tidybug_uGenus, by = 'taxa', all=TRUE)
+rm(tmp1)
+colnames(upset_Genus)[2:4] <- c("Porter", "Palmer", "tidybug")
+## data tidying
+upset_Genus$tidybug <- ifelse(grepl("tidybug", upset_Genus$tidybug), gsub("tidybug", 1, upset_Genus$tidybug), upset_Genus$tidybug)
+upset_Genus$Porter <- ifelse(grepl("Porter", upset_Genus$Porter), gsub("Porter", 1, upset_Genus$Porter), upset_Genus$Porter)
+upset_Genus$Palmer <- ifelse(grepl("Palmer", upset_Genus$Palmer), gsub("Palmer", 1, upset_Genus$Palmer), upset_Genus$Palmer)
+upset_Genus[is.na(upset_Genus)] <- 0
+upset_Genus$tidybug <- as.numeric(upset_Genus$tidybug)
+upset_Genus$Porter <- as.numeric(upset_Genus$Porter)
+upset_Genus$Palmer <- as.numeric(upset_Genus$Palmer)
+
+## upset plot for taxa with at least Genus-rank information
+## save as '
+upset(upset_Genus, sets = c("Palmer", "Porter", "tidybug"), 
+      sets.bar.color = vpal3,
+      order.by = "freq", empty.intersections = "on",
+      mainbar.y.label = "shared Genera\n\n",
+      sets.x.label = "unique Genera", 
+      text.scale = c(1.2, 1.2, 1, 1, 1, 1.2))
+
+
+
+#########
+#Family-data combined here:
+#########
+
+tmp1 <- merge(porter_uFamily, palmer_uFamily, by = 'taxa', all = TRUE)
+upset_Family <- merge(tmp1, tidybug_uFamily, by = 'taxa', all=TRUE)
+rm(tmp1)
+colnames(upset_Family)[2:4] <- c("Porter", "Palmer", "tidybug")
+## data tidying
+upset_Family$tidybug <- ifelse(grepl("tidybug", upset_Family$tidybug), gsub("tidybug", 1, upset_Family$tidybug), upset_Family$tidybug)
+upset_Family$Porter <- ifelse(grepl("Porter", upset_Family$Porter), gsub("Porter", 1, upset_Family$Porter), upset_Family$Porter)
+upset_Family$Palmer <- ifelse(grepl("Palmer", upset_Family$Palmer), gsub("Palmer", 1, upset_Family$Palmer), upset_Family$Palmer)
+upset_Family[is.na(upset_Family)] <- 0
+upset_Family$tidybug <- as.numeric(upset_Family$tidybug)
+upset_Family$Porter <- as.numeric(upset_Family$Porter)
+upset_Family$Palmer <- as.numeric(upset_Family$Palmer)
+
+## upset plot for taxa with at least Family-rank information
+upset(upset_Family, sets = c("Palmer", "Porter", "tidybug"), 
+      sets.bar.color = vpal3,
+      order.by = "freq", empty.intersections = "on",
+      mainbar.y.label = "shared Family\n\n",
+      sets.x.label = "unique Families", 
+      text.scale = c(1.2, 1.2, 1, 1, 1, 1.2))
+
+
+## save combined plots as 'S9_3upsetplots'; note two different export formats
+upset(upset_species, sets = c("Palmer", "Porter", "tidybug"), sets.bar.color = vpal3, order.by = "freq", empty.intersections = "on", mainbar.y.label = "shared species\n\n", sets.x.label = "unique Species", text.scale = c(1.2, 1.2, 1, 1, 1, 1.2))
+grid.edit('arrange',name='arrange2')
+vp1 = grid.grab()
+upset(upset_Genus, sets = c("Palmer", "Porter", "tidybug"), sets.bar.color = vpal3, order.by = "freq", empty.intersections = "on", mainbar.y.label = "shared Genera\n\n", sets.x.label = "unique Genera", text.scale = c(1.2, 1.2, 1, 1, 1, 1.2))
+grid.edit('arrange',name='arrange2')
+vp2 = grid.grab()
+upset(upset_Family, sets = c("Palmer", "Porter", "tidybug"), sets.bar.color = vpal3, order.by = "freq", empty.intersections = "on", mainbar.y.label = "shared Family\n\n",sets.x.label = "unique Families", text.scale = c(1.2, 1.2, 1, 1, 1, 1.2))
+grid.edit('arrange',name='arrange2')
+vp3 = grid.grab()
+
+svg("3upset_plots.svg", width = 9, height = 12)
+ggarrange(vp1,vp2,vp3, nrow = 3, labels = c('A', 'B', 'C'))
+dev.off()
+
+png("~/Repos/tidybug/figures/S9_3upset_plots.png", width = 400, height = 800)
+ggarrange(vp1,vp2,vp3, nrow = 3, labels = c('A', 'B', 'C'))
+dev.off()

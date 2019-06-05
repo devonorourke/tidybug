@@ -16,36 +16,66 @@ theme_devon <- function () {
 
 ## read in data and calculate sum of reads per Library, per Method
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
-LibSums <- df %>% filter(Filt=="basic") %>% group_by(Method, Library) %>% summarize(TrimSum=sum(Reads))
+guanoSums_tmp <- df %>% 
+  filter(Filt=="basic" & SampleType=="sample") %>% 
+  group_by(Method, Library) %>% 
+  summarize(TrimSum=sum(Reads)) %>% 
+  mutate(ReadType="guano")
+mockSums_tmp <- df %>% 
+  filter(Filt=="basic"& SampleType=="mock") %>% 
+  group_by(Method, Library) %>% 
+  summarize(TrimSum=sum(Reads)) %>% 
+  mutate(ReadType="mock")
+rm(df)
 
 ## add in raw read sums per library; raw "Joined" values assigned above derived by exporting "$LIB".joind.seqs.qza and ..
 ## ..counting number of N/4 lines of all data. see "seqfilter.qfilt_example.sh" for details
+## Need to subtract the values that count towards 'mock' samples per library though too!
 ## operations were: 1) qiime tools export --import-path "$LIB".joind.seqs.qza --output-path joind
 ## and  ...       : 2) cat ./joind/*.gz | zcat | awk '{s++}END{print s/4}'
-LibSums$JoindReads <- ""
-LibSums$JoindReads[LibSums$Library=="libA"] <- 14724385
-LibSums$JoindReads[LibSums$Library=="libB"] <- 17071355
-LibSums$JoindReads[LibSums$Library=="libC"] <- 14279338
-LibSums$JoindReads[LibSums$Library=="libD"] <- 14171652
-LibSums$JoindReads <- as.numeric(LibSums$JoindReads) 
+## Repeated same idea for ONLY the four mock samples so that we could calculate all guano contributions separately from mock data
+## 3) for example: zgrep -c '1:N:0:ACTGTGTA+CTAGTATG' mockIM4p4L1_L001_R1_001.fastq.gz
 
-## calculate percent of reads retained per Library per Method
-LibSums <- LibSums %>% mutate(ReadsRetained = TrimSum/JoindReads)
-LibSums$Method <- factor(LibSums$Method,levels = c("vsearch", "dada2", "deblur"))
+LibSums <- data.frame(Library=as.character(c("libA", "libB", "libC", "libD")),
+                      LibReads=as.numeric(c(14724385, 17071355, 14279338, 14171652)),
+                      MockReads=as.numeric(c(181012, 456441, 228383, 1176419)))
+LibSums$GuanoReads <- LibSums$LibReads - LibSums$MockReads
 
-## plot; exported at 750x400; save as '2_figure_librarySizesByFilterMethod'
-ggplot(data = LibSums, aes(x = ReadsRetained, y = Method, label=Library)) + 
+## merge guano and mock data separately with the `LibSums` object
+guanoLibSums <- merge(guanoSums_tmp, LibSums) %>% 
+  select(-LibReads, -MockReads) %>% 
+  mutate(ReadsRetained = round((TrimSum / GuanoReads), 2)) %>% 
+  select(-GuanoReads)
+
+mockLibSums <- merge(mockSums_tmp, LibSums) %>% 
+  select(-LibReads, -GuanoReads) %>% 
+  mutate(ReadsRetained = round((TrimSum / MockReads), 2)) %>% 
+  select(-MockReads)
+
+rm(guanoSums_tmp, mockSums_tmp)
+
+## combine together into single object for plot:
+plotdat <- rbind(guanoLibSums, mockLibSums)
+rm(guanoLibSums, mockLibSums)
+
+## set levels for plot
+plotdat$Method <- factor(plotdat$Method,levels = c("vsearch", "deblur", "dada2"))
+
+## plot; exported at 881x468; save as '2_figure_librarySizesByFilterMethod'
+ggplot(data = plotdat, aes(x = ReadsRetained, y = Method, label=Library)) + 
   geom_text_repel(vjust=1, nudge_y = 0.2, segment.alpha = 0.2) +
   geom_point() +
+  facet_wrap(~ReadType) +
   scale_shape_manual(values=c(65,66,67,68)) +
-  scale_x_continuous(limits = c(0.6, 1.0)) +
+  scale_x_continuous(limits = c(0.40, 1.0)) +
   geom_line(aes(group = Method), color="gray50") +
   labs(title="", y="", x="fraction of retained sequences") +
   theme_devon()
 
-## calculate percentage of reads retained per Method (aggregate all Libraries)
+## calculate percentage of reads retained per Method (aggregate all Libraries, combining Mock and Bat Guano together)
 ## not used for plots; just used for calculation...
 MethodSums <- df %>% filter(Filt=="basic") %>% group_by(Method) %>% summarize(TrimSum=sum(Reads))
 JoinedReadSums <- sum(14724385, 17071355, 14279338, 14171652)
 MethodSums$JoinedReadSums <- JoinedReadSums
 MethodSums <- MethodSums %>% mutate(ReadsRetained = TrimSum/JoinedReadSums) %>% select(Method, ReadsRetained)
+

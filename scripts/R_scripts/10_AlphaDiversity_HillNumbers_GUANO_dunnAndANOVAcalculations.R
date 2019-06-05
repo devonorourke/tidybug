@@ -16,7 +16,7 @@ theme_devon <- function () {
 
 ## import data:
 df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz")
-df <- df %>% filter(SampleType == "mock")
+df <- df %>% filter(SampleType != "mock")
 df$Labeler <- paste(df$Method, df$Filt, df$Library, sep="-")
 
 ################################################################################
@@ -24,10 +24,11 @@ df$Labeler <- paste(df$Method, df$Filt, df$Library, sep="-")
 ################################################################################
 
 ## function to calculate Hill Numbers per Method + Filt (grouping all guano data among all libraries)
-hill.function.wrare <- function(data, filter_exp, filter_exp2) {
+hill.function.wrare <- function(data, filter_exp, filter_exp2, filter_exp3) {
   filter_exp_enq <- enquo(filter_exp)
   filter_exp_enq2 <- enquo(filter_exp2)
-  tmp.df <- data %>% filter(!!filter_exp_enq) %>% filter(!!filter_exp_enq2)
+  filter_exp_enq3 <- enquo(filter_exp3)
+  tmp.df <- data %>% filter(!!filter_exp_enq) %>% filter(!!filter_exp_enq2) %>% filter(!!filter_exp_enq3)
   Method <- tmp.df %>% distinct(Method)
   Filt <- tmp.df %>% distinct(Filt)
   tmp.mat <- dcast(tmp.df, HashID ~ SeqID, value.var = "Reads", fill=0)
@@ -42,15 +43,15 @@ hill.function.wrare <- function(data, filter_exp, filter_exp2) {
   tmp_out <- gather(tmp.hill, key="Hill_qType", value = "Hill_value", c("q=0", "q=1", "q=2"))
 }
 
-rarefied.dada2.basic <- hill.function.wrare(df, Method=="dada2", Filt=="basic")
-rarefied.dada2.standard <- hill.function.wrare(df, Method=="dada2", Filt=="standard")
-rarefied.dada2.extra <- hill.function.wrare(df, Method=="dada2", Filt=="extra")
-rarefied.deblur.basic <- hill.function.wrare(df, Method=="deblur", Filt=="basic")
-rarefied.deblur.standard <- hill.function.wrare(df, Method=="deblur", Filt=="standard")
-rarefied.deblur.extra <- hill.function.wrare(df, Method=="deblur", Filt=="extra")
-rarefied.vsearch.basic <- hill.function.wrare(df, Method=="vsearch", Filt=="basic")
-rarefied.vsearch.standard <- hill.function.wrare(df, Method=="vsearch", Filt=="standard")
-rarefied.vsearch.extra <- hill.function.wrare(df, Method=="vsearch", Filt=="extra")
+rarefied.dada2.basic <- hill.function.wrare(df, Method=="dada2", Filt=="basic", SampleType=="sample")
+rarefied.dada2.standard <- hill.function.wrare(df, Method=="dada2", Filt=="standard", SampleType=="sample")
+rarefied.dada2.extra <- hill.function.wrare(df, Method=="dada2", Filt=="extra", SampleType=="sample")
+rarefied.deblur.basic <- hill.function.wrare(df, Method=="deblur", Filt=="basic", SampleType=="sample")
+rarefied.deblur.standard <- hill.function.wrare(df, Method=="deblur", Filt=="standard", SampleType=="sample")
+rarefied.deblur.extra <- hill.function.wrare(df, Method=="deblur", Filt=="extra", SampleType=="sample")
+rarefied.vsearch.basic <- hill.function.wrare(df, Method=="vsearch", Filt=="basic", SampleType=="sample")
+rarefied.vsearch.standard <- hill.function.wrare(df, Method=="vsearch", Filt=="standard", SampleType=="sample")
+rarefied.vsearch.extra <- hill.function.wrare(df, Method=="vsearch", Filt=="extra", SampleType=="sample")
 
 ## merge into single dataframe
 all.guano.hill.rare <- rbind(rarefied.dada2.basic, rarefied.dada2.standard, rarefied.dada2.extra, 
@@ -58,6 +59,7 @@ all.guano.hill.rare <- rbind(rarefied.dada2.basic, rarefied.dada2.standard, rare
                              rarefied.vsearch.basic, rarefied.vsearch.standard, rarefied.vsearch.extra)
 
 rm(list=ls(pattern = "rarefied*"))
+
 all.guano.hill.rare$Method <- as.factor(all.guano.hill.rare$Method)
 
 ## split df by Hill q-value:
@@ -68,13 +70,13 @@ q2.hill.df.rare <- all.guano.hill.rare %>% filter(Hill_qType == "q=2")
 
 ######## run the ANOVAs on unrarefied data
 q0.anova <- aov(Hill_value ~ Method * Filt, data=q0.hill.df.rare)
-capture.output(summary(q0.anova), file = "~/Repos/tidybug/data/text_tables/anova_mock/mock_rare.anova.q0.txt")
+capture.output(summary(q0.anova), file = "~/Repos/tidybug/data/text_tables/anova_guano/guano_rare.anova.q0.txt")
 
 q1.anova <- aov(Hill_value ~ Method * Filt, data=q1.hill.df.rare)
-capture.output(summary(q1.anova), file = "~/Repos/tidybug/data/text_tables/anova_mock/mock_rare.anova.q1.txt")
+capture.output(summary(q1.anova), file = "~/Repos/tidybug/data/text_tables/anova_guano/guano_rare.anova.q1.txt")
 
 q2.anova <- aov(Hill_value ~ Method * Filt, data=q2.hill.df.rare)
-capture.output(summary(q2.anova), file = "~/Repos/tidybug/data/text_tables/anova_mock/mock_rare.anova.q2.txt")
+capture.output(summary(q2.anova), file = "~/Repos/tidybug/data/text_tables/anova_guano/guano_rare.anova.q2.txt")
 
 
 ## Kruskal-Wallis:
@@ -86,11 +88,11 @@ kw_df_q1 <- kw_df %>% filter(Hill_qType == "q=1")
 kw_df_q2 <- kw_df %>% filter(Hill_qType == "q=2")
 
 capture.output(kruskal.test(Hill_value ~ Labeler, data = kw_df_q0),
-               file = "~/Repos/tidybug/data/text_tables/kw_mock/mock_rare_kw.q0.txt")
+               file = "~/Repos/tidybug/data/text_tables/kw_guano/guano_rare_kw.q0.txt")
 capture.output(kruskal.test(Hill_value ~ Labeler, data = kw_df_q1),
-               file = "~/Repos/tidybug/data/text_tables/kw_mock/mock_rare_kw.q1.txt")
+               file = "~/Repos/tidybug/data/text_tables/kw_guano/guano_rare_kw.q1.txt")
 capture.output(kruskal.test(Hill_value ~ Labeler, data = kw_df_q2),
-               file = "~/Repos/tidybug/data/text_tables/kw_mock/mock_rare_kw.q2.txt")
+               file = "~/Repos/tidybug/data/text_tables/kw_guano/guano_rare_kw.q2.txt")
 
 
 ##run Dunn's test for pairwise differences in diversity estimates
@@ -104,15 +106,15 @@ dunn_df_q2 <- filter(dunn_df, Hill_qType=="q=2")
 
 dunnout_q0 <- dunnTest(Hill_value ~ Labeler, data=dunn_df_q0, method="bh")
 dunnout_q0 <- dunnout_q0$res %>% arrange(P.adj)
-write.csv(dunnout_q0, file="~/Repos/tidybug/data/text_tables/dunn_mock/mock_rare_dunn_q0.csv", quote = FALSE, row.names = FALSE)
+write.csv(dunnout_q0, file="~/Repos/tidybug/data/text_tables/dunn_guano/guano_rare_dunn_q0.csv", quote = FALSE, row.names = FALSE)
 
 dunnout_q1 <- dunnTest(Hill_value ~ Labeler, data=dunn_df_q1, method="bh")
 dunnout_q1 <- dunnout_q1$res %>% arrange(P.adj)
-write.csv(dunnout_q1, file="~/Repos/tidybug/data/text_tables/dunn_mock/mock_rare_dunn_q1.csv", quote = FALSE, row.names = FALSE)
+write.csv(dunnout_q1, file="~/Repos/tidybug/data/text_tables/dunn_guano/guano_rare_dunn_q1.csv", quote = FALSE, row.names = FALSE)
 
 dunnout_q2 <- dunnTest(Hill_value ~ Labeler, data=dunn_df_q2, method="bh")
 dunnout_q2 <- dunnout_q2$res %>% arrange(P.adj)
-write.csv(dunnout_q2, file="~/Repos/tidybug/data/text_tables/dunn_mock/mock_rare_dunn_q2.csv", quote = FALSE, row.names = FALSE)
+write.csv(dunnout_q2, file="~/Repos/tidybug/data/text_tables/dunn_guano/guano_rare_dunn_q2.csv", quote = FALSE, row.names = FALSE)
 
 
 ################################################################################

@@ -39,7 +39,8 @@ out_99_df <- out_df %>% select(processid, similarity, query) %>% filter(similari
 rm(out_list, in_list)
 
 ## load meta data to merge BOLD taxa records
-meta <- read_delim(file = "~/Desktop/bold.meta.tmp.gz", delim = ";", col_names = FALSE)
+## download these data from OSF repo: https://osf.io/k3eh6/files/
+  ## alternatively, run from local: meta <- read_delim(file = "~/Desktop/bold.meta.tmp.gz", delim = ";", col_names = FALSE)
 colnames(meta) <- c("sequenceID", "processid", "bin_uri", "genbank_accession", "country", "institution_storing", "phylum_name", "class_name", "order_name", "family_name", "genus_name", "species_name")
 
 ## merge data frames
