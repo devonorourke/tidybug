@@ -36,7 +36,8 @@ The `.qza` file was used as input for each of the QIIME 2-based classifiers, whi
 
 ---
 
-**BLAST**: Modified the number of accepted hits from default (10) to 1000. Would have set to 0, except BLAST doesn't allow for this parameter in the QIIME implementation. Percent identity (0.97) and percent query coverage (0.89) match VSEARCH parameters, both of which were modified from default settings.
+**BLAST**: Modified the number of accepted hits from default (10) to 1000. Would have set to 0, except BLAST doesn't allow for this parameter in the QIIME implementation. Percent query coverage (0.89) was maintained across all possible parameters, while the percent identity parameter was explored using three values: 0.95, 0.97, and 0.99. Thus, we altered the `--p-perc-identity` argument below:
+
 ```
 qiime feature-classifier classify-consensus-blast \
   --i-query mockIM4_seqs.qza \
@@ -49,7 +50,7 @@ qiime feature-classifier classify-consensus-blast \
   --o-classification mockIM4.blast_out.qza
 ```
 
-**VSEARCH**: Changed default parameters to match BLAST settings for similar number of top hits to retain, same percent identity, and same percent query coverage used.
+**VSEARCH**: The parameters used here matched the BLAST settings for similar number of top hits to retain and same percent query coverage. Likewise, we explored the same set of percent identities.
 ```
 qiime feature-classifier classify-consensus-vsearch \
   --i-query mockIM4_seqs.qza \
@@ -63,6 +64,8 @@ qiime feature-classifier classify-consensus-vsearch \
   --o-classification mockIM4.vsearch_out.qza
 ```
 
+**VSEARCH with "top hits"**: We added one other parameter to the VSEARCH classification by invoking a `--top-hits` parameter using the same code as above. This parameter retains only the top alignment score among those hits that are above the assigned percent identity and coverage. In the event of ties an LCA process will be applied.
+
 **Naive Bayes**: Another kmer-based classification method used the SciKit Learn program wrapped in QIIME 2's `Naive Bayes` classifier. This required first training the database (the same dataset used for the VSEARCH and BLAST classifiers).
 ```
 READS=mockIM4_seqs.qza
@@ -75,16 +78,17 @@ qiime feature-classifier classify-sklearn \
   --verbose
 ```
 
-Once the classifier (`nbClassifer_allboldDB.qza`) was trained, we then invoked the Naive Bayes process to the mock dataset:
+Once the classifier (`nbClassifer_allboldDB.qza`) was trained, we then invoked the Naive Bayes process to the mock dataset. We amended a confidence parameter similar to what was invoked with SINTAX (see below) using the same range of values: 0.3, 0.5, 0.7, 0.8, and 0.9. Thus, we altered the `--p-confidence` as needed (value of 0.3 adjusted in subsequent runs):
 ```
 qiime feature-classifier classify-sklearn \
   --i-reads mockIM4_seqs.qza --i-classifier nbClassifer_allboldDB.qza \
   --p-n-jobs 1 --p-reads-per-batch 2000 \
   --o-classification mockIM4.nbayes_out.qza \
+  --p-confidence 0.3 \
   --verbose
 ```
 
-**SINTAX**: Unlike alignment-based classifiers, SINTAX does not have any percent identity or query coverage parameters. The one change to default parameters was setting the bootstrap confidence to 0.9. Note that we're using the VSEARCH implementation of SINTAX, not the version created by Robert Edgar. The database used for taxonomic evaluation is the same used in the other classifiers, with headers being modified from their implementation in QIIME (in QIIME the taxonomy and fasta sequences are in separate files; here the taxonomy information is part of the fasta header). These are the _same_ deprelicated, LCA-processed taxa used in QIIME-based classifiers. We reformatted our tidybug database data so that a single fasta contained the sequence and taxonomy information as follows:
+**SINTAX**: Unlike alignment-based classifiers, SINTAX does not have any percent identity or query coverage parameters. The one change to default parameters was setting the bootstrap confidence value. We explored a range of values including 0.3, 0.5, 0.7, 0.8 (default), and 0.9. Note that we're using the VSEARCH implementation of SINTAX, not the version created by Robert Edgar. The database used for taxonomic evaluation is the same used in the other classifiers, with headers being modified from their implementation in QIIME (in QIIME the taxonomy and fasta sequences are in separate files; here the taxonomy information is part of the fasta header). These are the _same_ deprelicated, LCA-processed taxa used in QIIME-based classifiers. We reformatted our tidybug database data so that a single fasta contained the sequence and taxonomy information as follows:
 ```
 ## Take the dereplicated fasta file and split into 2 column:
 zcat boldCOI.derep.fasta.gz | paste - - | sort -k1,1 > tmpfasta2merge.txt
@@ -102,7 +106,7 @@ $VSEARCH \
 --sintax CFMR_insect_mock4.fa \
 --db tmp_forSINTAX.fasta.gz \
 --tabbedout vsintax_out.txt \
---sintax_cutoff 0.9 \
+--sintax_cutoff 0.7 \
 --threads 12
 ```
 
@@ -137,7 +141,7 @@ qiime feature-classifier classify-consensus-blast \
 --o-classification derep.blast.qza
 ```
 
-**VSEARCH**: Parameters match BLAST.
+**VSEARCH**: Parameters match BLAST. Not we did not invoke the "top-hits" parameter explored in the mock community samples.
 ```
 ## note file paths reflect our servers
 qiime feature-classifier classify-consensus-vsearch \
@@ -152,7 +156,7 @@ qiime feature-classifier classify-consensus-vsearch \
 --o-classification derep.vsearch.qza
 ```
 
-**Naive Bayes**: Same classifier trained in mock data used here; same parameters also.
+**Naive Bayes**: Same classifier trained in mock data used here; same parameters also, using a 0.7 value for confidence (default).
 ```
 qiime feature-classifier classify-sklearn \
   --i-reads dada2.arthseqs.qza --i-classifier nbClassifer_allboldDB.qza \
@@ -167,7 +171,7 @@ $VSEARCH \
 --sintax dada2.arthASVs.fasta.gz \
 --db tmp_forSINTAX.fasta.gz \
 --tabbedout vsintax_out.txt \
---sintax_cutoff 0.9 \
+--sintax_cutoff 0.7 \
 --threads 12
 ```
 
