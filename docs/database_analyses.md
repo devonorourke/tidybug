@@ -141,7 +141,7 @@ In addition to the comparisons evaluating taxonomic completeness based on the da
 - `boldCOI.clust97.fasta` contained **265,885** unique sequences of which **119,070** were singletons
 - `boldCOI.clust95.fasta` contained **215,055** unique sequences of which **87,930** were singletons
 
-These data were presented in [Figure5](https://github.com/devonorourke/tidybug/blob/master/figures/figure5_clustSelectOrders.png) of the mansucript. The [database_clustering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/figure5_database_clustering.R) R script processed the `clust9*.names.txt.gz` files to understand how taxonomic completeness varies as a function of clustering percent identity.
+These data were presented in [Figure5](https://github.com/devonorourke/tidybug/blob/master/figures/figure5_clustSelectOrders.png) of the mansucript. The [database_clustering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/figure5_database_clustering.R) R script processed the `clust9*.names.txt.gz` files to understand how taxonomic completeness varies as a function of clustering percent identity. In addition, this R script also produced the data presented in **Table1** of the manuscript.  
 
 ## Impact of geographic specificity
 We restricted these analyses to our own datasets - the raw and dereplicated records. The `boldCustom.allArth.meta.txt` served as the raw input, though we filtered the necessary fields to reduce files size:
