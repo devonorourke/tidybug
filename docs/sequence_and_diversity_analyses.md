@@ -1,5 +1,8 @@
 # Overview
-Sequence data filtered as described in the [sequence_filtering.md](https://github.com/devonorourke/tidybug/blob/master/docs/sequence_filtering.md) document was imported for all diversity estimate. We were interested in evaluating alpha and beta diversity estimates for mock community and guano data. The descriptions below briefly describe the R scripts used to achieve the specific plots and tables used in the manuscript.
+Sequence data was obtained and filtered as described in the [sequence_filtering.md](https://github.com/devonorourke/tidybug/blob/master/docs/sequence_filtering.md) document. As explained at the end of that document, the [sequence_filtering.R script](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) was applied to create a master file containing the necessary data structures for the relevant denoising comparisons and diversity estimates - this is the `all.filtmethods.df.csv.gz` file available in [this directory of the GitHub repo](https://github.com/devonorourke/tidybug/raw/master/data/text_tables). 
+
+We imported the `all.filtmethods.df.csv.gz` file into a new R script to generate Figure 1
+applying the  imported for all diversity estimate. We were interested in evaluating alpha and beta diversity estimates for mock community and guano data. The descriptions below briefly describe the R scripts used to achieve the specific plots and tables used in the manuscript.
 
 ## Alpha diversity
 Scripts used to generate the associated figures and datasets for mock community analyses:
