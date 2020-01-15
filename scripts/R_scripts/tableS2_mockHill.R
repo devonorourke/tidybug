@@ -1,4 +1,4 @@
-## script for Figure 3 and accompanying stats
+## script for Table S2
 ## describes alpha diversity comparisons using Hill Numbers for MOCK data
 ## KW and Dunn's tests for comparisons among groups (denoiser software) at each filtering level
 
@@ -63,7 +63,7 @@ all.mock.hill$Method <- as.factor(all.mock.hill$Method)
 rm(list=ls(pattern = "rarefied*"))
 
 write.csv(all.mock.hill, 
-          file="~/Repos/tidybug/data/text_tables/mock_hillvals_table.csv", 
+          file="~/Documents/nau_projects/guano/mole_ecol_methods_paper/mock_hillvals_table.csv", 
           quote = FALSE, 
           row.names = FALSE)
 
@@ -145,3 +145,4 @@ ggplot(all.guano.hill.rare,
   theme(legend.position="none",
         strip.text.x = element_text(size=13), strip.text.y = element_text(size=13),
         panel.spacing = unit(1.5, "lines"), panel.grid.major.x = element_blank() )
+
