@@ -95,7 +95,7 @@ kw_df_stats <- rbind(q0_kw_df, q1_kw_df, q2_kw_df)
 rm(q0_kw_df, q1_kw_df, q2_kw_df)
 
 write.csv(kw_df_stats, 
-          file="~/Repos/tidybug/data/text_tables/kw_mock_table.csv", 
+          file="~/Documents/nau_projects/guano/mole_ecol_methods_paper/kw_mock_table.csv", 
           quote = FALSE, 
           row.names = FALSE)
 
@@ -123,7 +123,7 @@ dunn_df_stats <- rbind(q0_dunn_df, q1_dunn_df, q2_dunn_df)
 rm(q0_dunn_df, q1_dunn_df, q2_dunn_df)
 
 write.csv(dunn_df_stats, 
-          file="~/Repos/tidybug/data/text_tables/dunn_mock_table.csv", 
+          file="~/Documents/nau_projects/guano/mole_ecol_methods_paper/dunn_mock_table.csv", 
           quote = FALSE, 
           row.names = FALSE)
           
