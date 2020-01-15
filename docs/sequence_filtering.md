@@ -152,7 +152,7 @@ qiime tools export --input-path "$LIB".chimerafilt-stats.qzv --output-path "$LIB
 However, this creates a problem when comparing across filtering pipelines: vsearch by default in QIIME's implementation creates a sha1-hashed label, whereas dada2 and deblur use an md5 hashing algorithm to label sequences. As a result, you can't compare identical sequences. To fix this, we reformatted the resulting `"$LIB".vsrch.postChimera.p97clust*.qza` artifacts by (1) appending the sequences with the md5 hash using a native Vsearch function; generating a list of the equivalent md5 and sha1 hashIDs for each sequence; using these hashID pairs to relabel the original .qza feature table. Rather than doing this four times (one for each library), we're going to first combine the four libraries into a single dataset and execute the script just once.
 
 ## Combining datasets
-Following these three basic filtering pipelines, the per-`$LIB` tables and representative sequences were joined into individual `.qza` artifacts. See the `seqfilter.combineNfilter.sh` shell script for full details. As an example, this is how the Dada2-filtered sequencing batches of tables and sequences were combined (the same would apply for deblur and vsearch):
+Following these three basic filtering pipelines, the per-`$LIB` tables and representative sequences were joined into individual `.qza` artifacts. See the [seqfilter.combineNfilter.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.combineNfilter.sh) shell script for full details. As an example, this is how the Dada2-filtered sequencing batches of tables and sequences were combined (the same would apply for deblur and vsearch):
 
 ```
 ## merge the features for all dada2-produced tables and sequences
