@@ -46,7 +46,7 @@ Three separate pipelines were used for further filtering sequence data. Each pro
 - all methods retained per-dataset features (ASVs) _including_ singleton ASVs
 
 ### Dada2
-Dada 2 implementation below. See `seqfilter.dada2_example.sh` for example shell script used.
+Dada 2 implementation below. See [seqfilter.dada2_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.dada2_example.sh) for example shell script used.
 ```
 qiime dada2 denoise-paired \
   --i-demultiplexed-seqs "$LIB".trimd.qza \
@@ -61,7 +61,7 @@ qiime dada2 denoise-paired \
 DADA2 automatically discards singelton seqences, but retains doubletons, tripletons, etc. It also retains singleton ASVs by default in QIIME. Note that chimera filtering completed in DADA2 is done on a per-sample basis rather than by pooling the entire sample; this follows the recommendation of the developer (though the per-pool chimera detection option is available in QIIME).
 
 ### Deblur
-Unliked Dada2, Deblur uses a reference database of known sequences to model the error of the sequence data. The database used for denoising here is the same as described in the `database_workflow.md` document - a set of select arthropod sequences derived from the Barcode of Life Database (BOLD).
+Unliked Dada2, Deblur uses a reference database of known sequences to model the error of the sequence data. The database used for denoising here is the same as described in the `database_workflow.md` document - a set of select arthropod sequences derived from the Barcode of Life Database (BOLD). See [seqfilter.deblur_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.deblur_example.sh) for example shell script used.  
 > The `$REF` environmental variable specifies the full path to the QIIME artifact that represents the curated arthropod BOLD database
 
 ```
@@ -81,7 +81,7 @@ qiime deblur denoise-other \
 Unlike DADA2, Deblur by default discards singleton ASVs, and discards per-sample ASVs with less than 10 reads. We modified these default parameters to match DADA2. The chimera filtering performed in this analysis uses a VSEARCH implementation of Uchime-denovo and is thus independent of a reference library. This requires that chimera filtering is done on a pool of sequences, rather than on a per-sample level.
 
 ### Vsearch
-The parameters chosen in this implementation mostly follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). The exception is that their vignette removes singleton features, while we are retaining them; however, we are going to add an additional step in which per-sample ASVs with < 2 reads are discarded to match the DADA2 and Deblur filtering settings.
+The parameters chosen in this implementation mostly follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). The exception is that their vignette removes singleton features, while we are retaining them; however, we are going to add an additional step in which per-sample ASVs with < 2 reads are discarded to match the DADA2 and Deblur filtering settings. An example Slurm script is available: see [seqfilter.vsearch_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.vsearch_example.sh).  
 
 Within the QIIME installation, Vsearch filtering first required the read pairs to be joined first; we then applied a basic quality filter to the sequences:
 ```
