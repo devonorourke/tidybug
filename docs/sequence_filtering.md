@@ -392,21 +392,6 @@ grep "^>" ./miss_seqs/dna-sequences.fasta | sed 's/>//' > dada2.missseqs.txt
 These `*.txt` files are imported into the custom R script [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) to determine what the maximum value is per Library, per pipeline. Each Library of full guano data (or mock data) is then filtered according to that value.
 
 # Additional notes
-The output of this script and the additional [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) script generates all of the needed data structures for the section of the manuscript concerning filtering pipelines and parameters. In particular, the following scripts were used to generate the figures shown in the manuscript:
+After completion of the [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) script, a master file containing the necessary data structures was generated for the subsequent denoising comparisons and diversity. Specifically, the [diversity analysis document](https://github.com/devonorourke/tidybug/blob/master/docs/diversity_analyses.md) provides the information linking the the particular scripts used to generate the figures and data reported in the manuscript relevant to these comparisons (denoising programs and parameters, as well as diversity estimates).  
 
-Table1: 
-Figure 1
-Figure 2
-Figure 3
-Figure 4
-Figure 5
-Figure 6
-Figure 7
-
-TableS1
-TableS2
-TableS3
-TableS4
-TableS5
-TableS6
-FigureS1
+Other portions of the manuscript concerning [database curation](https://github.com/devonorourke/tidybug/blob/master/docs/database_construction.md), [database comparisons](https://github.com/devonorourke/tidybug/blob/master/docs/database_analyses.md), and [classifier comparisons](https://github.com/devonorourke/tidybug/blob/master/docs/classification_analyses.md) each have their own documentation, and also provide information linking the particular scripts used to generate the figures and tables reported in the manuscript pertaining to each section.  
