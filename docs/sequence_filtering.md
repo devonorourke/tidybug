@@ -22,7 +22,7 @@ qiime tools import \
 The resulting `$LIB.demux.qza` artifact is then used as input for read trimming. This artifact contains unjoined fastq files.
 
 ## Primer trimming and visualization
-Forward and reverse fastq file pairs are trimmed separately with Cutadapt within the QIIME environment. Note that adapter trimming was performed within the previous `seqfilter.import_example.sh` shell script.
+Forward and reverse fastq file pairs are trimmed separately with Cutadapt within the QIIME environment. Note that adapter trimming was performed within the previous [seqfilter.import_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.import_example.sh) shell script.
 
 ```
 qiime cutadapt trim-paired \
