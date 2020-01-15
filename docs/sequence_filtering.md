@@ -317,7 +317,7 @@ The "standard" filter will apply two criteria for inclusion: (1) samples must ha
 ### Extra filtering approach
 The "extra" filter uses the same filtering criteria as the "standard" filter, but further requires that a fixed-count subtraction is applied to all reads per sequence variant per sample. This value is determined by first identifying which ASVs in a given mock sample are unexpected: those samples that have less than 97% identity to our known mock sequences. Once we have a list of the unexpected, or "miss" sequences, we identify the sequence variant among those "miss" variatns with the highest read count. That maximum value serves as the integer with which all sequence variants are reduced by.
 
-A reference QIIME artifact consisting of the known (expected) mock sequences was generated from the fasta file of known community members and sequences (see: [CFMR_insect_mock4.fasta](https://github.com/devonorourke/tidybug/blob/master/data/mock_community/CFMR_insect_mock4.fasta)) and uploaded into QIIME format:
+A reference QIIME artifact consisting of the known (expected) mock sequences was generated from the fasta file of known community members and sequences (see: [CFMR_insect_mock4.fa](https://github.com/devonorourke/tidybug/blob/master/data/mock_community/CFMR_insect_mock4.fa)) and uploaded into QIIME format:
 
 ```
 qiime tools import \
