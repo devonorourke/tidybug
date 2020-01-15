@@ -1,5 +1,5 @@
 # Motivations
-We were interested in evaluating how certain filtering decisions affected the representation of taxa in the database we construct. Some questions pertained to the raw sequences obtained prior to filtering, while others pertained to our filtered and dereplicated dataset.
+I was interested in evaluating how certain filtering decisions used to generate a COI database affected the representation of taxa available to classify representative sequences. In other words, how do things like the source of COI sequences, the filtering strategies, or the clustering strategies affect the subsequent references available?  
 
 ## Alternative database setup
 We also decided to explore similar questions using a pair of databases available online formatted by other labs:
@@ -65,11 +65,11 @@ vsearch --derep_fulllength porter.arthCOI_notax.fasta.tmp --output porter.derep.
 
 Filtering for Arthropod records reduces the initial **1,280,577** COI records down to **883,979** sequences. Dereplication further reduces these records down to **515,780** distinct sequences.
 
-
 The remaining sequence records following dereplication that match the `porter_outmap.txt` taxonomy records are used for compositional comparisons.
 
 ## Database questions to address
-Using the arthropod-selected Palmer and Porter databases, the raw BOLD COI records we retained with the `bold_datapull.R` script, and  the resulting filtered dataset (see `database_construction.md`), we addressed the following questions:
+Using the arthropod-selected Palmer and Porter databases, the raw BOLD COI records we retained with the [bold_datapull_arths.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/bold_datapull_arths.R) R script, and the resulting filtered dataset (see [database_construction.md](https://github.com/devonorourke/tidybug/blob/master/docs/database_construction.md)), we addressed the following questions:  
+
 How do these datasets compare with respect to
   - distribution of sequence length?
   - number of unique taxa per level
@@ -91,7 +91,7 @@ seqkit fx2tab --length --name --header-line porter.derep.fasta | cut -f 4 | gzip
 seqkit fx2tab --length --name --header-line boldCOI.derep.fasta | cut -f 4 | gzip --best > derep.lengths.txt.gz
 zcat boldCustom.allArth.seqNtaxa.csv.gz | cut -f 3 -d ',' | awk 'NR > 1 { print length }' | gzip --best > raw.lengths.txt.gz
 ```
-These files were used to generate the plot with the R script `database_lengths.R`
+These files were used to generate the plot with the R script [database_lengths.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/database_lengths.R).
 
 We find that the plurality of sequences are represented by a single length of 658bp for all databases, though the proportion of these ranges from the lowest frequency in the Palmer database (24.2%) to the highest in the Raw dataset (36.5%).
 **Why is this the case? Likely because of the dominant arthropod records having full length COI at that length**
@@ -101,9 +101,10 @@ The next most frequently observed length for most datasets ranges is observed fo
 **Why are these in his and not other dbs?** For one, Porter requires a minimum at 500bp, so we won't see theirs.
 
 
-## Distribution of taxonomic composition and taxonomic completeness
-Proportions of unique taxa represented from Class to Species levels were assessed for each of the four databases. In addition, taxonomic completeness was evaluated by determining the number of instances in which no data was present at a given taxonomic Level (Class through Species). Finally, we also evaluated the most abundant (top 20) taxa for Class through Genus Levels in the three dereplicated datasets (Palmer, Porter, and ours), though we also retained the full Porter dataset and our own non-dereplicated dataset to illustrate how some records are represented hundreds or thousands of times in raw data.
-We included records that contained any information in the Species designation including an arbitrary "sp." marker, thus these results represent a liberal estimate of Species information. Of note, because the `bold_datapull.R` script used to download data specified either Class or Order names to pull data, we are potentially discarding records within BOLD that contain a COI marker but no Phylum or Class information - we made no attempts at determining how pervasive this level of missingness could be. In addition, the Porter method queried NCBI with a Perl script that specified that "species" [RANK] be included for the Arthropod records, so there should not be any taxonomic information missing from this dataset (however, by requiring species-level information, certain taxa may no longer be represented at higher levels). These discrepancies are evaluated in the `classification_analyses.md` document.
+## Porportions of shared taxonomic names and differences in completeness of taxonomic records
+Proportions of shared and distinct represented from Class to Species levels were assessed for each of the three databases. These are presented in **Figure 4B** of the manuscript. In addition, taxonomic completeness was evaluated by determining the number of instances in which no data was present at a given taxonomic Level (Class through Species) - these are represented in **Figure 4A**.  
+
+We included records that contained any information in the Species designation including an arbitrary "sp." marker, thus these results represent a liberal estimate of Species information. Of note, because the [bold_datapull_arths.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/bold_datapull_arths.R) script used to download data specified either Class or Order names to pull data, we are potentially discarding records within BOLD that contain a COI marker but no Phylum or Class information - we made no attempts at determining how pervasive this level of missingness could be. In addition, the Porter method queried NCBI with a Perl script that specified that "species" [RANK] be included for the Arthropod records, so there should not be any taxonomic information missing from this dataset (however, by requiring species-level information, certain taxa may no longer be represented at higher levels). These discrepancies are evaluated **Figure 4** of the manuscript; these data were generated using the [figure4_database_comparisons.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/figure4_database_comparisons.R) R script.
 
 We performed a minor amount of data filtering to keep delimiter stucture and prefix for taxonomy levels consistent across datasets. In addition, we retained only Class through Species-level information (discarding any kingdom/phylum information because it was redundant for this comparison).
 
@@ -140,7 +141,7 @@ In addition to the comparisons evaluating taxonomic completeness based on the da
 - `boldCOI.clust97.fasta` contained **265,885** unique sequences of which **119,070** were singletons
 - `boldCOI.clust95.fasta` contained **215,055** unique sequences of which **87,930** were singletons
 
-the `database_clustering.R` script processed the `clust9*.names.txt.gz` files to understand how taxonomic completeness varies as a function of clustering percent identity.
+the [database_clustering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/figure5_database_clustering.R) R script processed the `clust9*.names.txt.gz` files to understand how taxonomic completeness varies as a function of clustering percent identity.
 
 ## Impact of geographic specificity
 We restricted these analyses to our own datasets - the raw and dereplicated records. The `boldCustom.allArth.meta.txt` served as the raw input, though we filtered the necessary fields to reduce files size:
@@ -151,30 +152,13 @@ The Sequence ID's present from the `boldCOI.derep.txt` file served as input for 
 
 To understand the impact on geographic specificity on taxonomic composition of a database, we filtered our BOLD records by requiring that the `country` column in the BOLD dataset contain either `United States` or `Canada` records. We then investigated how this effects the taxonomic composition at the Class and Order levels, as well as the proportional representation of sequence records from the top 10 sources listed in the `institution_storing` field of the BOLD dataset.
 
-The `database_geography.R` script was used to generate the associated plots.
+The [database_geography.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/database_geography.R) script was used to generate the associated plots (not shown in manuscript, but available in [this directory of the repo containing unpublished images](https://github.com/devonorourke/tidybug/blob/master/figures).  
 
-We find that the vast majority of data comes from one place: Centre for Biodiversity Genomics (CBG). While GenBank (GBK) records also contribute a significant fraction, they are more significant when data is filtered to US or Canada country codes. For the raw BOLD records without any geographic filtering, CBG possesses 62.7% of all sequences, while GBK contains 8.9%, and all other institutions contain about 2.8%. For dereplicated data without any geograhpic filtering the results are similar: 62.7% from CBG, 10.2% from GBK, and 2.7% from others. Yet once a record is filtered as being identified from the United States or Canada, the proportion of records from CBG increases substantially: 89.5% from CBG, less than 1% from GBK, and 9.6% from other institutions. A similar trend is observed for the dereplicated data: 89.9% CBG, less than 1% for GBK, and about 9.1% for other institutions.
+We find that the vast majority of data comes from one place: Centre for Biodiversity Genomics (CBG). While GenBank (GBK) records also contribute a significant fraction, they are more significant when data is filtered to US or Canada country codes. For the raw BOLD records without any geographic filtering, CBG possesses 62.7% of all sequences, while GBK contains 8.9%, and all other institutions contain about 2.8%. For dereplicated data without any geograhpic filtering the results are similar: 62.7% from CBG, 10.2% from GBK, and 2.7% from others. Yet once a record is filtered as being identified from the United States or Canada, the proportion of records from CBG increases substantially: 89.5% from CBG, less than 1% from GBK, and 9.6% from other institutions. A similar trend is observed for the dereplicated data: 89.9% CBG, less than 1% for GBK, and about 9.1% for other institutions. See [this image](https://github.com/devonorourke/tidybug/blob/master/figures/unused_images/db_6_geography.png) for a plot of the comparisons of data by source and [this image](https://github.com/devonorourke/tidybug/blob/master/figures/unused_images/db_7a-alt_MissingnessByGeography.png) comparing missingness among databases by country.
 
-Nevertheless, filtering does not appear to impact the overall taxonomic composition between Class through Genus levels; that is, when applying the same filtering strategy and limiting only records with "US" or "Canada" information in the BOLD metadata, the most abundant taxa are proportional across Levels.
+Nevertheless, filtering does not appear to impact the overall taxonomic composition between Class through Genus levels; that is, when applying the same filtering strategy and limiting only records with "US" or "Canada" information in the BOLD metadata, the most abundant taxa are proportional across Levels. 
 
-## Impact of Vsearch parameters
-Went back and ran vsearch with 2 modified settings. The default way we were searching with QIIME was to generate:
-1. pid=97%, qcov=94%, search stopped after first 10 hits retained
-But, we modified these settings to search the entire database this time at either similar or lower percent identities:
-2. pid=97%, qcov=94%, search stopped after entire database searched
-3. pid=90%, qcov=94%, search stopped after entire database searched
+Additonal comparisons between pairs of countries were also performed. Interestingly, we find evidence that particular countries - even those that share geographic boarders - often have different distributions of taxa. This may suggest that filtering by a particular country may bias towards particular arthropod orders. See [this image](https://github.com/devonorourke/tidybug/blob/master/figures/unused_images/db_12_databaseCompositionByCountry.png) for details.  
 
-The expectation is that the number of ambiguous taxa should go up marginally with the more exhaustive database search, however, we should also get the most accurate result possible.
-The lower percent identity will likely recover more taxa that were previously unassigned, but we'll likely now reduce our information content in the previously assigned taxa substantially.
-```
-vsearch --usearch_global $FASTA --db $REF --threads 24 \
---id 0.90 --query_cov 0.94 --strand both \
---maxaccepts 0 --maxrejects 0 --maxhits 1 \
---output_no_hits --blast6out vsearch.p90c94out.txt
-```
-
-
-I also wanted to figure out whether or not the unassigned taxa from the standard vsearch p97c94max10 parameters in QIIME2 generally were better represented as chordate sequences in Palmer's process:
-```
-awk '$2=="*" {print $0}' vsearch.p90c94out.txt | cut -f 1 > nohitlist.txt
-```
+## Next steps
+The remaining work related to this manuscript concerns the comparisons of classifiers. See the [classification comparisons](https://github.com/devonorourke/tidybug/blob/master/docs/classification_analyses.md) document for full details. 
