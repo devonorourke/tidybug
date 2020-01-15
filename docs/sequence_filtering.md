@@ -81,9 +81,10 @@ qiime deblur denoise-other \
 Unlike DADA2, Deblur by default discards singleton ASVs, and discards per-sample ASVs with less than 10 reads. We modified these default parameters to match DADA2. The chimera filtering performed in this analysis uses a VSEARCH implementation of Uchime-denovo and is thus independent of a reference library. This requires that chimera filtering is done on a pool of sequences, rather than on a per-sample level.
 
 ### Vsearch
-The parameters chosen in this implementation mostly follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). The exception is that their vignette removes singleton features, while we are retaining them; however, we are going to add an additional step in which per-sample ASVs with < 2 reads are discarded to match the DADA2 and Deblur filtering settings. An example Slurm script is available: see [seqfilter.vsearch_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.vsearch_example.sh).  
+The parameters chosen in this implementation mostly follow those described by Vsearch authors in [their Wiki documentation](https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline). The exception is that their vignette removes singleton features, while we are retaining them; however, we are going to add an additional step in which per-sample ASVs with < 2 reads are discarded to match the DADA2 and Deblur filtering settings. A pair of Slurm scripts were used to complete these tasks.  
 
-Within the QIIME installation, Vsearch filtering first required the read pairs to be joined first; we then applied a basic quality filter to the sequences:
+To begin, within the QIIME installation, Vsearch filtering first required the read pairs to be joined first; we then applied a basic quality filter to the sequences. See the [seqfilter.qfilt_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.qfilt_example.sh) script for a Slurm submission script.  
+
 ```
 ## merge paired end data
 ## '--p-allowmergestagger' necessary because of the large overhang with our 300bp seqs and 180bp amplicon
@@ -99,7 +100,7 @@ qiime quality-filter q-score-joined \
  --o-filter-stats "$LIB".qfiltd-stats.qza
  ```
 
- We then dereplicate the merged reads, cluster at 98% before chimera detection, perform the de novo chimera filtering, discard the chimeras, then cluster once more at 97% identity to produce the OTU table and representative sequence variants.
+Next, we then dereplicate the merged reads, cluster at 98% before chimera detection, perform the de novo chimera filtering, discard the chimeras, then cluster once more at 97% identity to produce the OTU table and representative sequence variants. See [seqfilter.vsearch_example.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.vsearch_example.sh) for an example.  
 
  ```
  ## dereplicate the merged dataset
@@ -243,7 +244,8 @@ The resulting fasta files were downloaded for each species. Note that the fasta 
 1. fasta file containg header lacking taxonomic info plus sequence data
 2. text file containing fasta header and taxonomy information
 
-The resulting datasets were refomratted and are available as `nh.bat.hosts.fasta` and `nh.bat.hosts.txt`, respectively. These are available within the /data/databases section of the Github repo. The `nh.bat.hosts.*` files were imported into qiime for use in filtering out host reads:
+The resulting datasets were refomratted and are available as [nh.bat.hosts.fasta](https://github.com/devonorourke/tidybug/blob/master/data/databases/nh.bat.hosts.fasta) and [nh.bat.hosts.txt](https://github.com/devonorourke/tidybug/blob/master/data/databases/nh.bat.hosts.txt), respectively. The `nh.bat.hosts.*` files were imported into QIIME for use in filtering out host reads:  
+
 ```
 qiime tools import \
   --type 'FeatureData[Sequence]' \
@@ -257,7 +259,7 @@ qiime tools import \
   --output-path NHbat_tax.qza
 ```
 
-These file pairs were used in the `seqfilter.combineNfilter.sh` script to remove bat COI sequences. In brief, we first determine which sequences align to our host reference (bat) representaive sequences:
+These file pairs were used in the [seqfilter.combineNfilter.sh](https://github.com/devonorourke/tidybug/blob/master/scripts/shell_scripts/seqfilter.combineNfilter.sh) script to remove bat COI sequences. In brief, we first determine which sequences align to our host reference (bat) representaive sequences:
 > Note here that `$METHOD` indicates the path to the directory containing each filtered table and sequence set (from Dada2, deblur, and vsearch), while `$REF` is the path to the **bat** reference database (not the arthropod BOLD database)
 
 ```
@@ -304,18 +306,18 @@ qiime feature-table filter-seqs \
 mv vsearch.arthseqs-filtd.qza vsearch.arthseqs.qza
 ```
 
-The `*.arthtable.qza` files produced represent our "basic" host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). These artifacts serve as the input for potentially additional sample and sequence variant-based filtering described next. Files were uploaded to the Github repo (/tidybug/data/qiime/tables).
+The `*.arthtable.qza` files produced represent our "basic" host-filtered datasets, one per filtering program (Dada2, Deblur, or Vsearch). These artifacts serve as the input for potentially additional sample and sequence variant-based filtering described next. Each of these are available at this Github repo [here](https://github.com/devonorourke/tidybug/tree/master/data/qiime).
 
 ## Filtering datasets
-The "standard" and "extra" tables are created from the `*arthseqs.qza` and `*arthtable.qza` objects (from dada2, deblur, and vsearch-filtered inputs). We opted to use a combination of QIIME-supported functions as well as a custom R script `sequence_filtering.R` to generate the "standard" and "extra" datasets because of the need for generating the figures used in this manuscript and to allow for additional flexibility in statistical tests not supported with QIIME2 version 2018.11 (note that additional packages like the Adonis plugin for PERMANOVA testing of group differences were added to QIIME2 v.2019.1, for example). We provide context for how the "standard" and "extra" filters are designed below, and have commented within the R script for additional clarification.
+The "standard" and "extra" tables are created from the `*arthseqs.qza` and `*arthtable.qza` objects (from dada2, deblur, and vsearch-filtered inputs). We opted to use a combination of QIIME-supported functions as well as a custom R script [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) to generate the "standard" and "extra" datasets because of the need for generating the figures used in this manuscript and to allow for additional flexibility in statistical tests not supported with QIIME2 version 2018.11 (note that additional packages like the Adonis plugin for PERMANOVA testing of group differences were added to QIIME2 v.2019.1, for example). We provide context for how the "standard" and "extra" filters are designed below, and have commented within the R script for additional clarification.
 
 ### Standard filtering approach
-The "standard" filter will apply two criteria for inclusion: (1) samples must have at least 5000 sequence reads (from the `*arthtable.qza` artifact), and (2) keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then apply the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample. This dataset was created by importing the `*arthtable.qza` file for each pipeline (dada2, deblur, or vsearch) into an R environment and applying the `sequence_filtering.R` script.
+The "standard" filter will apply two criteria for inclusion: (1) samples must have at least 5000 sequence reads (from the `*arthtable.qza` artifact), and (2) keeps only those sequence variants observed in at least 2 samples across the entire dataset. The rationale behind dropping low-abundance samples is that sequence errors are more likely in samples with low abundances of reads. We perform the read-minimum filtering on samples first, then apply the sequence variant-minimum filter. As a result, a sample following a the "standard" filter may have less than 5000 reads if one of the OTUs happened to be dropped from that sample. This dataset was created by importing the `*arthtable.qza` file for each pipeline (dada2, deblur, or vsearch) into an R environment and applying the [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) script.
 
 ### Extra filtering approach
 The "extra" filter uses the same filtering criteria as the "standard" filter, but further requires that a fixed-count subtraction is applied to all reads per sequence variant per sample. This value is determined by first identifying which ASVs in a given mock sample are unexpected: those samples that have less than 97% identity to our known mock sequences. Once we have a list of the unexpected, or "miss" sequences, we identify the sequence variant among those "miss" variatns with the highest read count. That maximum value serves as the integer with which all sequence variants are reduced by.
 
-A reference QIIME artifact consisting of the known (expected) mock sequences was generated from the fasta file of known community members and sequences (`CFMR_insect_mock4.fasta`) and uploaded into QIIME format:
+A reference QIIME artifact consisting of the known (expected) mock sequences was generated from the fasta file of known community members and sequences (see: [CFMR_insect_mock4.fasta](https://github.com/devonorourke/tidybug/blob/master/data/mock_community/CFMR_insect_mock4.fasta)) and uploaded into QIIME format:
 
 ```
 qiime tools import \
@@ -323,7 +325,7 @@ qiime tools import \
   --output-path mock.ExpectedSeqs.qza \
   --type 'FeatureData[Sequence]'
 ```  
-> See a similar `CMFR_insect_mock4_wtax.fasta` file for expected taxonomic information.
+> See a similar file, [CFMR_insect_mock4_wtax.fasta](https://github.com/devonorourke/tidybug/blob/master/data/mock_community/CFMR_insect_mock4_wtax.fasta), for expected taxonomic information.
 
 To create a feature table consisting of just the four mock samples, we first create a small metadata file listing the 4 mock samples of interest:
 ```
@@ -335,7 +337,7 @@ echo mockIM4p7L2 >> mocklist.txt
 ```
 
 Because all filtered samples contain the same mock sample names, we can apply that file to filter each feature table to include just the mock samples (making a mock-only feature table). We apply this to each of the 3 `*arthtable.qza` files (example shown here for dada2):
-> Note the `$MOCKLIST` variable shown below describes the full path to the `mocklist.txt` file
+> Note the `$MOCKLIST` variable shown below describes the full path to the [mocklist.txt](https://github.com/devonorourke/tidybug/blob/master/data/mock_community/mocklist.txt) file:  
 
 ```
 qiime feature-table filter-samples \
@@ -375,7 +377,7 @@ qiime quality-control exclude-seqs --p-method vsearch \
 rm dada2.mock.exactMisses.qza
 ```
 
-We then export the each of the `*.mock.qza` artifacts and save the HashIDs for each of the mock samples.
+We then export the each of the `*.mock.qza` artifacts and save the HashIDs for each of the mock samples. Each of these files are available in a directory named for each denoising pipeline - see [this parent directory for access to all files](https://github.com/devonorourke/tidybug/tree/master/data/classify_comps/mock_comps).
 ```
 qiime tools export --input-path dada2.mock.exactHits.qza --output-path exact_seqs
 qiime tools export --input-path dada2.mock.partialHits.qza --output-path partial_seqs
@@ -387,7 +389,24 @@ grep "^>" ./miss_seqs/dna-sequences.fasta | sed 's/>//' > dada2.missseqs.txt
 
 ```
 
-These `*.txt` files are imported into the custom R script `sequence_filtering.R` to determine what the maximum value is per Library, per pipeline. Each Library of full guano data (or mock data) is then filtered according to that value.
+These `*.txt` files are imported into the custom R script [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) to determine what the maximum value is per Library, per pipeline. Each Library of full guano data (or mock data) is then filtered according to that value.
 
 # Additional notes
-The output of this script and the additional `sequence_filtering.R` script generates all of the needed data structures for the section of the manuscript concerning filtering pipelines and parameters. Additional R scripts were applied to generate the datasets and figures concerning alpha and beta diversity metrics. See the `database_filtering.md` document for details of bioinformatic processes used in the database-related section of the manscript. Additional R scripts are generated for each figure as needed; each figure has it's own R script for clarity.
+The output of this script and the additional [sequence_filtering.R](https://github.com/devonorourke/tidybug/blob/master/scripts/R_scripts/1_sequence_filtering.R) script generates all of the needed data structures for the section of the manuscript concerning filtering pipelines and parameters. In particular, the following scripts were used to generate the figures shown in the manuscript:
+
+Table1: 
+Figure 1
+Figure 2
+Figure 3
+Figure 4
+Figure 5
+Figure 6
+Figure 7
+
+TableS1
+TableS2
+TableS3
+TableS4
+TableS5
+TableS6
+FigureS1
