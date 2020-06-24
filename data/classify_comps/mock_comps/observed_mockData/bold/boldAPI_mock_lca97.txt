@@ -19,6 +19,5 @@ MockIM46	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae;g__E
 MockIM47	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia;NA
 MockIM49	k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa
 MockIM5	k__Animalia;p__Arthropoda;c__Insecta;o__Hemiptera;f__Aphididae;g__Aphis;NA
-MockIM52	k__Animalia;p__Arthropoda;c__Insecta;NA;NA;NA;NA
 MockIM53	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Udea;NA
 MockIM7	k__Animalia;p__Arthropoda;c__Insecta;NA;NA;NA;NA
