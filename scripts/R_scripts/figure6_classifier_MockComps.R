@@ -1,17 +1,6 @@
 library(tidyverse)
 library(reshape2)
 
-################################################################################
-## note on updating this plot:
-#0. may need to switch the data table used for "expected" as unclear what current ground truth is
-#4. need to alter plot code so taxa Level are ordered properly (via levels=factor()...)
-################################################################################
-
-
-################################################################################
-## data wrangling
-################################################################################
-
 ## read in Data
 readerfunction <- function(urlpath) {
   tmp <- read_delim(file = urlpath, delim = "\t", col_names = FALSE) %>%
@@ -28,7 +17,6 @@ readerfunction <- function(urlpath) {
   tmp[] <- lapply(tmp, as.character)
   tmp %>% gather(key = level, value = Taxon, -IMalias)
 }
-
 
 exp_url <- "https://github.com/devonorourke/tidybug/raw/master/data/classify_comps/mock_comps/expected_mockData/mock_expected_taxa.txt"
 
@@ -88,9 +76,6 @@ vs95top_df <- readerfunction(vs95top_url)
 vs97top_df <- readerfunction(vs97top_url)
 vs99top_df <- readerfunction(vs99top_url)
 
-
-## evaluate the FalsePositive, FalseNegative, TruePositive, and TrueNegative conditions for each taxa, at each Level
-## merge two datasets:
 truthfunction <- function(obs_data, classifier, parameter) {
   selectTests <- c("TAR", "TDR", "F")
   tmp1 <- inner_join(exp_df, obs_data, by = c("IMalias", "level"), suffix = c("_exp", "_obs")) %>% 
@@ -118,7 +103,6 @@ truthfunction <- function(obs_data, classifier, parameter) {
     mutate(Classifier = classifier) %>% 
     mutate(Parameter = parameter)
 }
-
 
 bo95_tmp_dat <- truthfunction(bo95_df, "boldAPI+LCA", "95")
 bo97_tmp_dat <- truthfunction(bo97_df, "boldAPI+LCA", "97")
@@ -148,7 +132,6 @@ vs97top_tmp_dat <- truthfunction(vs97top_df, "VSEARCH+LCA+top_hit (q2)", "97")
 vs99top_tmp_dat <- truthfunction(vs99top_df, "VSEARCH+LCA+top_hit (q2)", "99")
 
 
-## combine into single dataset for plotting:
 plot_dat <- rbind(bo95_tmp_dat, bo97_tmp_dat, bo99_tmp_dat,
                   sn30_tmp_dat, sn50_tmp_dat, sn70_tmp_dat, sn80_tmp_dat, sn90_tmp_dat,
                   nb30_tmp_dat, nb50_tmp_dat, nb70_tmp_dat, nb80_tmp_dat, nb90_tmp_dat,
@@ -156,19 +139,6 @@ plot_dat <- rbind(bo95_tmp_dat, bo97_tmp_dat, bo99_tmp_dat,
                   vs95_tmp_dat, vs97_tmp_dat, vs99_tmp_dat,
                   vs95top_tmp_dat, vs97top_tmp_dat, vs99top_tmp_dat)
 
-rm(bo95_tmp_dat, bo97_tmp_dat, bo99_tmp_dat,
-   sn30_tmp_dat, sn50_tmp_dat, sn70_tmp_dat, sn80_tmp_dat, sn90_tmp_dat,
-   nb30_tmp_dat, nb50_tmp_dat, nb70_tmp_dat, nb80_tmp_dat, nb90_tmp_dat,
-   bl95_tmp_dat, bl97_tmp_dat, bl99_tmp_dat,
-   vs95_tmp_dat, vs97_tmp_dat, vs99_tmp_dat,
-   vs95top_tmp_dat, vs97top_tmp_dat, vs99top_tmp_dat)
-
-rm(list = ls(pattern = "*_url"))
-
-
-################################################################################
-## plot
-################################################################################
 
 theme_devon <- function () { 
   theme_bw(base_size=12, base_family="Avenir") %+replace% 
@@ -197,115 +167,20 @@ pdodge_val = 0.75
 ymin_val = 0.3
 
 ggplot(plot_dat %>% filter(Metric == "TDR"), 
-       aes(x=level, y=Score, color=Classifier, group=Classifier, label=Parameter, shape=Classifier)) +
+       aes(x=level, y=Score, fill=Classifier, group=Classifier, label=Parameter)) +
   geom_linerange(aes(ymin=ymin_val, ymax=Score),
                  color="gray50",
-                 position = position_dodge(width = pdodge_val),
+                 position = position_dodge(width = pdodge_val + 0.5),
                  size = 1.5) +
-  geom_point(size=9, 
-             position = position_dodge(pdodge_val)) +
+  geom_rect(aes(xmin = 1, ymin = Score - 0.03, xmax = 2, ymax = Score + 0.03, colour=Classifier),
+            position = position_dodge(pdodge_val + 0.5), fill="white") +
+  facet_wrap(~ level, scales = "free_x") +
   scale_color_manual(values = pal6) +
-  scale_shape_manual(values = c(15,15,15,15,15,15)) +
-  geom_point(size=6, position = position_dodge(pdodge_val), color="white") +
-  geom_text(size = 3, position = position_dodge(pdodge_val), color="black") +
+  geom_text(size = 5, position = position_dodge(pdodge_val + 0.5), color="black") +
   theme_devon() +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.text = element_text(size=11),
         panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        strip.text = element_text(size=12),
         legend.position="top", legend.text = element_text(size=13),legend.title = element_text(size=12)) +
-  facet_wrap(~ level, scales = "free_x") +
   labs(y = "TDR score\n", x="") +
   scale_y_continuous(limits = c(ymin_val,1.1))
-
-
-## export data as text files (one per Metric)
-TAR_out <- plot_dat %>% 
-  filter(Metric == "TAR") %>% 
-  select(-Metric) %>% 
-  mutate(Score = round(Score, 2)) %>% 
-  spread(., key = level, value = Score)
-write.table(TAR_out, 
-            file = "~/Documents/nau_projects/guano/mole_ecol_methods_paper/mockTARdata.txt",
-            quote = FALSE, col.names = TRUE, row.names = FALSE)
-
-TDR_out <- plot_dat %>% 
-  filter(Metric == "TDR") %>% 
-  select(-Metric) %>% 
-  mutate(Score = round(Score, 2)) %>% 
-  spread(., key = level, value = Score)
-write.table(TDR_out, 
-            file = "~/Documents/nau_projects/guano/mole_ecol_methods_paper/mockTDRdata.txt",
-            quote = FALSE, col.names = TRUE, row.names = FALSE)
-
-F_out <- plot_dat %>% 
-  filter(Metric == "F") %>% 
-  select(-Metric) %>% 
-  mutate(Score = round(Score, 2)) %>% 
-  spread(., key = level, value = Score)
-write.table(F_out, 
-            file = "~/Documents/nau_projects/guano/mole_ecol_methods_paper/mockFdata.txt",
-            quote = FALSE, col.names = TRUE, row.names = FALSE)
-
-
-#### this script compares the "top-hit" option in VSEARCH against the standard way
-#### the output of the 99/97/05 tables show that the topHit option generates unique species names ...
-#### that are absent in the general VSEARCH method. That is, "tophit" finds MORE species names, but ...
-#### these are likely ambiguous in the instance with which 
-myorder <- c('Class','Order','Family','Genus','Species')
-
-comp99 <- inner_join(vs99_df, vs99top_df, by = c("IMalias", "level"), suffix = c("_noTop", "_topHit")) %>% 
-  mutate(truth = case_when(
-    Taxon_noTop == Taxon_topHit  ~ "bothMatch",
-    is.na(Taxon_noTop) == is.na(Taxon_topHit)  ~ "bothEmpty",
-    is.na(Taxon_noTop) & !is.na(Taxon_topHit)  ~ "onlyTopHit",
-    !is.na(Taxon_noTop) & is.na(Taxon_topHit)  ~ "onlyNoTop")) %>% 
-  select(-starts_with("Taxon")) %>%
-  group_by(level, truth) %>% 
-  summarize(counts = n()) %>% 
-  spread(truth, counts, fill = 0) %>% 
-  rename(TaxaLevel = level) %>% 
-  as.data.frame(.)
-
-comp99$TaxaLevel <- factor(comp99$TaxaLevel, 
-                           levels = c('Class','Order','Family','Genus','Species'))
-
-comp99 <- comp99[order(comp99$TaxaLevel),]
-
-########################################################
-
-comp97 <- inner_join(vs97_df, vs97top_df, by = c("IMalias", "level"), suffix = c("_noTop", "_topHit")) %>% 
-  mutate(truth = case_when(
-    Taxon_noTop == Taxon_topHit  ~ "bothMatch",
-    is.na(Taxon_noTop) == is.na(Taxon_topHit)  ~ "bothEmpty",
-    is.na(Taxon_noTop) & !is.na(Taxon_topHit)  ~ "onlyTopHit",
-    !is.na(Taxon_noTop) & is.na(Taxon_topHit)  ~ "onlyNoTop")) %>% 
-  select(-starts_with("Taxon")) %>%
-  group_by(level, truth) %>% 
-  summarize(counts = n()) %>% 
-  spread(truth, counts, fill = 0) %>% 
-  rename(TaxaLevel = level) %>% 
-  as.data.frame(.)
-
-comp97$TaxaLevel <- factor(comp97$TaxaLevel, 
-                           levels = c('Class','Order','Family','Genus','Species'))
-
-comp97 <- comp97[order(comp97$TaxaLevel),]
-
-########################################################
-
-comp95 <- inner_join(vs95_df, vs95top_df, by = c("IMalias", "level"), suffix = c("_noTop", "_topHit")) %>% 
-  mutate(truth = case_when(
-    Taxon_noTop == Taxon_topHit  ~ "bothMatch",
-    is.na(Taxon_noTop) == is.na(Taxon_topHit)  ~ "bothEmpty",
-    is.na(Taxon_noTop) & !is.na(Taxon_topHit)  ~ "onlyTopHit",
-    !is.na(Taxon_noTop) & is.na(Taxon_topHit)  ~ "onlyNoTop")) %>% 
-  select(-starts_with("Taxon")) %>%
-  group_by(level, truth) %>% 
-  summarize(counts = n()) %>% 
-  spread(truth, counts, fill = 0) %>% 
-  rename(TaxaLevel = level) %>% 
-  as.data.frame(.)
-
-comp95$TaxaLevel <- factor(comp95$TaxaLevel, 
-                           levels = c('Class','Order','Family','Genus','Species'))
-
-comp95 <- comp95[order(comp95$TaxaLevel),]
