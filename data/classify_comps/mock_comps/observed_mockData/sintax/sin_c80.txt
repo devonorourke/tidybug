@@ -20,5 +20,4 @@ MockIM47	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__
 MockIM33	k__Animalia;p__Arthropoda;c__Insecta;o__Neuroptera;f__Mantispidae;g__Dicromantispa;s__Dicromantispa sayi
 MockIM46	k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae
 MockIM44	k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Chironomidae;g__Procladius;s__Ambiguous taxa
-MockIM52	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus
 MockIM53	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae
