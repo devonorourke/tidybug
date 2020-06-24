@@ -192,12 +192,10 @@ plot_dat$level <- factor(plot_dat$level,
 plot_dat$Classifier <- factor(plot_dat$Classifier,
                               levels = c("BLAST+LCA (q2)", "VSEARCH+LCA (q2)", "VSEARCH+LCA+top_hit (q2)","NaiveBayes (q2)", "SINTAX (vsearch)", "boldAPI+LCA"))
 
-## and plot; save as
+## and plot; save as 'figure6_classifierComps_wVals.png'; will need to modify in Illustrator to fix internal integers that overlap
 pdodge_val = 0.75
 ymin_val = 0.3
 
-
-## save as Figure6_classifierComps; export at 1200x600
 ggplot(plot_dat %>% filter(Metric == "TDR"), 
        aes(x=level, y=Score, color=Classifier, group=Classifier, label=Parameter, shape=Classifier)) +
   geom_linerange(aes(ymin=ymin_val, ymax=Score),
@@ -211,15 +209,12 @@ ggplot(plot_dat %>% filter(Metric == "TDR"),
   geom_point(size=6, position = position_dodge(pdodge_val), color="white") +
   geom_text(size = 3, position = position_dodge(pdodge_val), color="black") +
   theme_devon() +
-  theme(legend.position="top",
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        axis.text = element_text(size=13),
-        legend.text = element_text(size=13),
-        legend.title = element_text(size=15),) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.text = element_text(size=11),
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        legend.position="top", legend.text = element_text(size=13),legend.title = element_text(size=12)) +
+  facet_wrap(~ level, scales = "free_x") +
   labs(y = "TDR score\n", x="") +
-  guides(color = guide_legend(nrow = 1)) +
-  scale_y_continuous(limits = c(ymin_val,1))
+  scale_y_continuous(limits = c(ymin_val,1.1))
 
 
 ## export data as text files (one per Metric)
