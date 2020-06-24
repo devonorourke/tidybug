@@ -17,7 +17,6 @@ k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Blattidae;g__Periplaneta;s_
 k__Animalia;p__Arthropoda;c__Arachnida;o__Opiliones;f__Phalangiidae	0.046022365	0.04893397	0.048820308	0.047029318
 k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Chironomidae;g__Procladius;s__Ambiguous taxa	0.032619758	0.033787151	0.03386828	0.032058764
 k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae	0.042701471	0.038220367	0.041830247	0.043496393
-k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia	0.036303689	0.03560953	0.035347684	0.035190871
 k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa	0.025323311	0.0264778	0.025575962	0.024146425
 k__Animalia;p__Arthropoda;c__Insecta;o__Hemiptera;f__Aphididae	0.051217959	0.049504239	0.052119042	0.056016231
 k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus	0.042177745	0.045596662	0.042936209	0.042201369
