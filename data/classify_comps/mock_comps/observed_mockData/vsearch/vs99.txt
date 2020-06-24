@@ -10,7 +10,6 @@ MockIM53	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Ude
 MockIM29	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hypena;s__Hypena scabra
 MockIM15	k__Animalia;p__Arthropoda;c__Insecta;o__Diptera;f__Bombyliidae;g__Lepidophora;s__Lepidophora lutea
 MockIM16	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae;g__Elophila;s__Elophila obliteralis
-MockIM52	k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus
 MockIM10	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Tortricidae;g__Choristoneura;s__Choristoneura rosaceana
 MockIM4	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Noctuidae;g__Agrotis;s__Agrotis ipsilon
 MockIM28	k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Erebidae;g__Hyphantria;s__Hyphantria cunea
