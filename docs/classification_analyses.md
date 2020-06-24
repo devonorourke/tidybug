@@ -19,16 +19,16 @@ Mock samples and guano samples were processed separately using the parameters de
 
 ## Mock samples
 
-Expected mock sequences were identified by previous researchers and provided to us as a fasta file [available here](https://github.com/devonorourke/tidybug/tree/master/data/mock_community/CFMR_insect_mock4_wtax.fasta). We made a few modifications from their originally proposed names by following a more conservative estimate of Species names: mock members IM5, IM10, and IM53 had multiple best hits within our defined Species-level boundaries for query coverage (92%) and percent identity (98%). While multiple best hits were available above these criteria for each mock sample, in every instance the same Genus was listed for all potential hits, thus we retained that information. The fasta format was converted into a tab delimited file containing the updated names and is available [at this link](https://github.com/devonorourke/tidybug/tree/master/data/classify_comps/mock_comps/expected_mockData/mock_expected_taxa.txt).
+As mentioned in the methods section of the manuscript, we amended added species names to two of the 24 mock specimen which lacked information based on sequence alignment searches using both GenBank and BOLD databases. The remaining specimen that did not contain high percent alignment identity and coverage was removed from the analysis for classification - this modified file is available with taxonomic information in the fasta header [at this link](https://github.com/devonorourke/tidybug/blob/master/data/classify_comps/mock_comps/CFMR_insect_mock4_wtax_noIM52.fasta). The fasta format was converted into a tab delimited file containing the updated names and is available [at this link](https://github.com/devonorourke/tidybug/tree/master/data/classify_comps/mock_comps/expected_mockData/mock_expected_taxa.txt).
 
 The mock fasta was converted into a format useful for QIIME 2. We stripped out the taxonomic names from the headers of the fasta file first, then imported that file:
 ```
 ## strip headers
-cat CFMR_insect_mock4_wtax.fasta | paste - - | cut -f 1,4 | sed 's/;//g' | tr '\t' '\n' > CFMR_insect_mock4.fa
+cat CFMR_insect_mock4_wtax_noIM52.fasta | paste - - | cut -f 1,4 | sed 's/;//g' | tr '\t' '\n' > CFMR_insect_mock4_noIM52.fa
 
 ## import to QIIME 2 format
 qiime tools import \
-  --input-file CFMR_insect_mock4.fa --output-file mockIM4_seqs.qza \
+  --input-file CFMR_insect_mock4.fa --output-file mockIM4_noIM42_seqs.qza \
   --input-formate FeatureData[Sequence]
 ```
 
