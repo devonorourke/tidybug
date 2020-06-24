@@ -20,6 +20,5 @@ k__Animalia;p__Arthropoda;c__Insecta;o__Coleoptera;f__Scarabaeidae;g__Euphoria;s
 k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Scudderia	0.036303689	0.03560953	0.035347684	0.035190871
 k__Animalia;p__Arthropoda;c__Insecta;o__Blattodea;f__Ectobiidae;g__Supella;s__Supella longipalpa	0.025323311	0.0264778	0.025575962	0.024146425
 k__Animalia;p__Arthropoda;c__Insecta;o__Hemiptera;f__Aphididae;g__Aphis	0.051217959	0.049504239	0.052119042	0.056016231
-k__Animalia;p__Arthropoda;c__Insecta;o__Orthoptera;f__Tettigoniidae;g__Conocephalus;s__Conocephalus strictus	0.042177745	0.045596662	0.042936209	0.042201369
 k__Animalia;p__Arthropoda;c__Insecta;o__Lepidoptera;f__Crambidae	0.037666565	0.03721124	0.039273608	0.039126522
 k__Animalia;p__Arthropoda;c__Insecta;o__Trichoptera;f__Leptoceridae;g__Ceraclea;s__Ceraclea maculata	0.030280848	0.031977169	0.031527089	0.031153106
