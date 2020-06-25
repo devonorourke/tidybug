@@ -1,1 +1,1 @@
-Supplementary data tables and figures referenced in manuscript avaialble here
+Supplementary data tables and figures referenced in manuscript available here.
