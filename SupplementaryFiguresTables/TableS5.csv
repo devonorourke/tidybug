@@ -1,5 +1,5 @@
 Source,df,SS,MS,F.Model,R2,P(perm)
-Dice-Sorensen model,,,,,,
+**Dice-Sorensen model**,,,,,,
 Method,2,0.3904,0.1952,0.5300,0.0013,1
 Filt,2,1.2350,0.6175,1.6766,0.0041,0.002
 MonthStart,3,42.7005,14.2335,38.6446,0.1416,0.001
