@@ -1,0 +1,39 @@
+library(ggmap)
+library(tidyverse)
+library(ggrepel)
+
+## making map of number of samples sequenced in dataset (regardless of read depth)
+
+metadata1 <- read_csv("https://raw.githubusercontent.com/devonorourke/nhguano/master/data/metadata/allbat_meta.csv")
+metadata2 <- read_csv("https://raw.githubusercontent.com/devonorourke/nhguano/master/data/metadata/qiime_NHbat_meta.csv")
+metadata2 <- metadata2[,c(1,8,9)]
+colnames(metadata2)[1] <- "Site"
+sitePosition <- distinct(metadata2)
+metadata <- merge(metadata1, sitePosition, all.x = TRUE)
+rm(metadata1, metadata2, sitePosition)
+
+df <- read_csv("https://github.com/devonorourke/tidybug/raw/master/data/text_tables/all.filtmethods.df.csv.gz") %>% 
+  filter(SampleType == "sample")
+
+sitedata <- metadata %>% 
+  filter(SampleID %in% df$SeqID) %>% 
+  group_by(Site, SiteLat, SiteLong) %>% 
+  tally()
+
+sitedata$SiteLat <- ifelse(sitedata$Site == "FAR", 44.5884, sitedata$SiteLat)
+sitedata$SiteLong <- ifelse(sitedata$Site == "FAR", -69.5986, sitedata$SiteLong)
+
+sitedata <- sitedata %>% 
+  rename(lon = SiteLong, lat = SiteLat) %>% 
+  mutate(PlotLabel = paste(Site, n, sep = "\n"))
+
+## import map layers from Google
+basemap <- get_stamenmap(bbox = c(left = -72.5, bottom = 42.5, right = -69.5, top = 45),
+              zoom = 9,maptype = "toner-background")
+
+ggmap(basemap) +
+  geom_point(aes(x=lon, y=lat), color="firebrick", data=sitedata, size=2.5) +
+  geom_label_repel(aes(x=lon, y=lat, label=PlotLabel), data=sitedata, size=3)
+
+
+## save as "FigureS1_collectionMap"; export at 650x650
