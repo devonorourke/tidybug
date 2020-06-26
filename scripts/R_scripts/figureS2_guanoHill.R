@@ -1,4 +1,4 @@
-## script for Figure 3 and accompanying stats
+## script for Figure S2 and accompanying stats
 ## describes alpha diversity comparisons using Hill Numbers for guano data
 ## KW and Dunn's tests for comparisons among groups (denoiser software) at each filtering level
 
