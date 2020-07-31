@@ -6,6 +6,7 @@ library(dplyr)
 library(taxize)
 library(rvest)
 library(stringr)
+library(data.table)
 
 ## getting list of all Arthropod names in BOLD
 x <- downstream("Arthropoda", db = "ncbi", downto = "class")
@@ -165,10 +166,7 @@ write.csv(otherInsects_df, file='allBOLD.otherInsects.csv', row.names = FALSE, q
 
 x.raw <- rbind(nonInsects_df, otherInsects_df, Hymn_df, Lep_df, Coleo_df, Dip_df)
 rm(nonInsects_df, otherInsects_df, Hymn_df, Lep_df, Coleo_df, Dip_df)
-
 x.seqs <- x.raw %>% select(sequenceID, nucleotides)
-write.csv(x.seqs, file = "boldCustom.allArth.seqs.csv", quote = FALSE, row.names = FALSE)   ## file used to create fasta
-rm(x.seqs)
 
 x.taxon <- x.raw %>% select(sequenceID, phylum_name, class_name, order_name, family_name, genus_name, species_name)
 x.taxon$kingdom_name <- "k__Animalia"
@@ -182,8 +180,13 @@ x.taxon$taxon <- paste(x.taxon$kingdom_name, x.taxon$phylum_name, x.taxon$class_
                        x.taxon$order_name, x.taxon$family_name, x.taxon$genus_name, 
                        x.taxon$species_name, sep = ";")
 x.taxon <- x.taxon %>% select(sequenceID, taxon)
-write.csv(x.taxon, file = "boldCustom.allArth.taxa_string.csv", quote = FALSE, row.names = FALSE)   ## file used to create taxonomy file
-rm(x.taxon)
+
+## merge sequence and taxonomic information
+setkey(x.seqs, sequenceID)
+setkey(x.taxon, sequenceID)
+seqNtaxa <- x.seqs[x.taxon, nomatch=0]
+write.csv(seqNtaxa, file = "boldCustom.allArth.seqNtaxa.csv", quote = FALSE, row.names = FALSE)   ## file used to begin database construction with filters
+  ## see: https://github.com/devonorourke/tidybug/blob/master/docs/database_construction.md#filtering-bold-data
 
 x.meta <- x.raw %>% select(sequenceID, processid, bin_uri, genbank_accession, country, institution_storing,
                            phylum_name, class_name, order_name, family_name, genus_name, species_name)
