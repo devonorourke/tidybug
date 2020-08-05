@@ -182,9 +182,7 @@ x.taxon$taxon <- paste(x.taxon$kingdom_name, x.taxon$phylum_name, x.taxon$class_
 x.taxon <- x.taxon %>% select(sequenceID, taxon)
 
 ## merge sequence and taxonomic information
-setkey(x.seqs, sequenceID)
-setkey(x.taxon, sequenceID)
-seqNtaxa <- x.seqs[x.taxon, nomatch=0]
+seqNtaxa <- merge(x.seqs, x.taxon, by="sequenceID")
 write.csv(seqNtaxa, file = "boldCustom.allArth.seqNtaxa.csv", quote = FALSE, row.names = FALSE)   ## file used to begin database construction with filters
   ## see: https://github.com/devonorourke/tidybug/blob/master/docs/database_construction.md#filtering-bold-data
 
